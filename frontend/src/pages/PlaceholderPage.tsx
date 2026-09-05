@@ -10,7 +10,7 @@ export function PlaceholderPage({ title, module }: Props) {
     <EmptyState
       module={module}
       title={`${title} ainda nao foi implementado`}
-      description="Esta tela e um empty state da Fase 00. A foundation esta pronta, mas este modulo nao possui backend, dados ou fluxos funcionais."
+      description="Modulo em breve. A Fase 1 nao implementa este fluxo; nenhum dado ficticio e exibido."
     />
   );
 }

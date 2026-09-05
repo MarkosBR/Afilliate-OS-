@@ -56,7 +56,7 @@ export function Sidebar({ open, onClose }: Props) {
                   >
                     <span>{item.label}</span>
                     {!item.implemented ? (
-                      <span className="text-[10px] uppercase tracking-wide opacity-70">Soon</span>
+                      <span className="text-[10px] uppercase tracking-wide opacity-70">Em breve</span>
                     ) : null}
                   </NavLink>
                 ))}

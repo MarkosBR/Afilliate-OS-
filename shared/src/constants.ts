@@ -8,6 +8,7 @@ export const API_ROUTES = {
   auth: "/api/auth",
   users: "/api/users",
   products: "/api/products",
+  links: "/api/links",
   campaigns: "/api/campaigns",
   content: "/api/content",
   analytics: "/api/analytics",
@@ -17,6 +18,9 @@ export const API_ROUTES = {
   integrations: "/api/integrations",
   notifications: "/api/notifications",
 } as const;
+
+export const SESSION_COOKIE = "affiliateos_session";
+export const AUTH_TOKEN_STORAGE_KEY = "affiliateos_token";
 
 export const PLANS = ["FREE", "STARTER", "PRO", "ENTERPRISE"] as const;
 export const USER_STATUSES = ["ACTIVE", "INACTIVE", "SUSPENDED", "PENDING"] as const;

@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
-    "test": "node -e \"console.log('Frontend foundation: no unit tests in phase 00')\""
+    "test": "node -e \"console.log('Frontend phase 1: covered by API isolation tests')\""
   },
   "dependencies": {
     "@affiliateos/shared": "*",

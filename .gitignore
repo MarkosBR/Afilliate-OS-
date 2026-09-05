@@ -3,9 +3,14 @@ dist
 build
 coverage
 .env
+.env.*
+!.env.example
 .env.local
 .env.*.local
 *.log
+logs
+*.pem
+*.key
 .DS_Store
 .vscode
 .idea

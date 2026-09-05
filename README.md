@@ -2,7 +2,14 @@
 
 AffiliateOS — Seu sistema operacional para afiliados.
 
-Fase 00: foundation. Layout, design system, API modular, PostgreSQL e Prisma. Modulos de produto ainda nao estao implementados.
+Fase 1: autenticacao, perfil, produtos, links, campanhas e analytics inicial sobre a foundation da Fase 0.
+
+## Stack
+
+- Frontend: React, TypeScript, Vite, Tailwind CSS, React Router, TanStack Query
+- Backend: Node.js, TypeScript, Express
+- Database: PostgreSQL + Prisma ORM
+- Infra local: Docker Compose
 
 ## Requisitos
 
@@ -16,7 +23,7 @@ Fase 00: foundation. Layout, design system, API modular, PostgreSQL e Prisma. Mo
 npm install
 ```
 
-## Configuracao do .env
+## Configuracao
 
 ```bash
 cp .env.example .env
@@ -37,7 +44,7 @@ NODE_ENV=development
 
 Nao coloque secrets reais no repositorio.
 
-## PostgreSQL
+## Banco
 
 ### Docker Compose
 
@@ -50,20 +57,10 @@ bash scripts/setup-local-db.sh
 
 Crie um banco e um usuario equivalentes aos valores de `DATABASE_URL`.
 
-```bash
-createdb affiliateos
-```
-
 ## Migrations
 
 ```bash
 npm run db:generate
-npm run db:migrate
-```
-
-Em ambientes ja migrados:
-
-```bash
 npm run prisma:migrate:deploy -w backend
 ```
 
@@ -87,22 +84,7 @@ Ou ambos:
 npm run dev
 ```
 
-## Health check
-
-```bash
-curl http://localhost:3001/api/health
-```
-
-Resposta esperada:
-
-```json
-{
-  "success": true,
-  "status": "ok",
-  "database": "connected",
-  "timestamp": "..."
-}
-```
+Abra `http://localhost:5173`, crie uma conta em `/register` e acesse o dashboard.
 
 ## Testes
 
@@ -127,8 +109,17 @@ docs/       arquitetura e roadmap
 scripts/    utilitarios locais
 ```
 
-## Documentacao
+## Funcionalidades da Fase 1
 
-- docs/ARCHITECTURE.md
-- docs/DATABASE.md
-- docs/ROADMAP.md
+- Cadastro, login, logout e sessao
+- Rotas protegidas
+- Perfil (`/settings/profile`)
+- Dashboard com metricas reais (zeros quando nao ha dados)
+- CRUD de produtos, links e campanhas
+- Analytics inicial sem dados ficticios
+- Automacao apenas como estrutura "Em breve"
+- Isolamento de dados por usuario
+
+## Proximas fases
+
+Auth social, tracking real de cliques, CRM, IA, integracoes e automacoes reais. Ver `docs/ROADMAP.md` e `PHASE-1.md`.

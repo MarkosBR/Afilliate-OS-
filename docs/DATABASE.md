@@ -18,53 +18,42 @@ postgresql://affiliateos:affiliateos@localhost:5432/affiliateos?schema=public
 docker compose up -d postgres
 ```
 
-## Modelo atual (Fase 00)
+## Modelos (Fase 1)
 
-Somente `User`.
+- `users`
+- `products`
+- `affiliate_links`
+- `campaigns`
+- `content`
+- `analytics`
 
-Campos:
+Todos os registros de negocio pertencem a um `User`.
 
-- id
-- name
-- email
-- passwordHash
-- avatar
-- plan
-- status
-- createdAt
-- updatedAt
+### User
 
-Indices:
+- id, name, email, passwordHash, avatar, plan, status, lastLogin, createdAt, updatedAt
 
-- email (unique + index)
-- status
-- plan
-- createdAt
+### Product
 
-Enums:
+- nome, descricao, plataforma (HOTMART, EDUZZ, KIWIFY, OTHER), ID externo, link de afiliado, comissao, status
 
-- `Plan`: FREE, STARTER, PRO, ENTERPRISE
-- `UserStatus`: ACTIVE, INACTIVE, SUSPENDED, PENDING
+### AffiliateLink
 
-## Relacionamentos futuros
+- nome, slug unico por usuario, url, productId, userId
 
-O modelo User e a base para:
+### Campaign
 
-- Products
-- Campaigns
-- Content
-- Leads
-- Sales
-- Notifications
-- Integrations
+- nome, descricao, orcamento, status (DRAFT, ACTIVE, PAUSED, COMPLETED), productId, userId
 
-Essas tabelas nao existem nesta fase.
+### Content / Analytics
+
+Estrutura preparada. Eventos de analytics so existem se forem gravados; a UI nao inventa valores.
 
 ## Comandos
 
 ```bash
 npm run db:generate
-npm run db:migrate
+npm run prisma:migrate:deploy -w backend
 npm run db:push
 npm run db:studio
 ```

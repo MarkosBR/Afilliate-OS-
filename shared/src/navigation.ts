@@ -13,16 +13,18 @@ export type NavSection = {
 
 export const NAVIGATION: NavSection[] = [
   {
-    id: "overview",
-    label: "Visao Geral",
-    items: [{ id: "dashboard", label: "Dashboard", path: "/", implemented: true }],
-  },
-  {
-    id: "management",
-    label: "Gestao",
+    id: "main",
+    label: "Principal",
     items: [
-      { id: "products", label: "Products", path: "/products", implemented: false },
-      { id: "campaigns", label: "Campaigns", path: "/campaigns", implemented: false },
+      { id: "dashboard", label: "Dashboard", path: "/dashboard", implemented: true },
+      { id: "products", label: "Produtos", path: "/products", implemented: true },
+      { id: "affiliates", label: "Afiliados", path: "/affiliates", implemented: false },
+      { id: "links", label: "Links", path: "/links", implemented: true },
+      { id: "content", label: "Conteudo", path: "/content", implemented: false },
+      { id: "campaigns", label: "Campanhas", path: "/campaigns", implemented: true },
+      { id: "automation", label: "Automacao", path: "/automation", implemented: true },
+      { id: "analytics", label: "Analytics", path: "/analytics", implemented: true },
+      { id: "settings", label: "Configuracoes", path: "/settings/profile", implemented: true },
     ],
   },
   {
@@ -52,14 +54,6 @@ export const NAVIGATION: NavSection[] = [
     ],
   },
   {
-    id: "analysis",
-    label: "Analise",
-    items: [
-      { id: "analytics", label: "Analytics", path: "/analytics", implemented: false },
-      { id: "revenue", label: "Revenue Center", path: "/revenue", implemented: false },
-    ],
-  },
-  {
     id: "intelligence",
     label: "Inteligencia",
     items: [
@@ -77,7 +71,6 @@ export const NAVIGATION: NavSection[] = [
       { id: "command", label: "Command Center", path: "/command", implemented: false },
       { id: "alerts", label: "Alert Center", path: "/alerts", implemented: false },
       { id: "integrations", label: "Integrations", path: "/integrations", implemented: false },
-      { id: "settings", label: "Settings", path: "/settings", implemented: false },
     ],
   },
 ];

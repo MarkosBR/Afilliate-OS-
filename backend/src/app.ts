@@ -7,6 +7,12 @@ import { healthRouter } from "./modules/health/health.routes.js";
 import { createPlaceholderRouter } from "./modules/_placeholders/placeholder.routes.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 import { requestLogger } from "./middleware/requestLogger.js";
+import { authRouter } from "./modules/auth/auth.routes.js";
+import { usersRouter } from "./modules/users/users.routes.js";
+import { productsRouter } from "./modules/products/products.routes.js";
+import { linksRouter } from "./modules/links/links.routes.js";
+import { campaignsRouter } from "./modules/campaigns/campaigns.routes.js";
+import { analyticsRouter } from "./modules/analytics/analytics.routes.js";
 
 export function createApp() {
   const app = express();
@@ -34,13 +40,13 @@ export function createApp() {
   );
 
   app.use("/api/health", healthRouter);
-
-  app.use("/api/auth", createPlaceholderRouter("Auth"));
-  app.use("/api/users", createPlaceholderRouter("Users"));
-  app.use("/api/products", createPlaceholderRouter("Products"));
-  app.use("/api/campaigns", createPlaceholderRouter("Campaigns"));
+  app.use("/api/auth", authRouter);
+  app.use("/api/users", usersRouter);
+  app.use("/api/products", productsRouter);
+  app.use("/api/links", linksRouter);
+  app.use("/api/campaigns", campaignsRouter);
+  app.use("/api/analytics", analyticsRouter);
   app.use("/api/content", createPlaceholderRouter("Content"));
-  app.use("/api/analytics", createPlaceholderRouter("Analytics"));
   app.use("/api/leads", createPlaceholderRouter("Leads"));
   app.use("/api/sales", createPlaceholderRouter("Sales"));
   app.use("/api/ai", createPlaceholderRouter("AI"));

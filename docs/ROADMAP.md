@@ -2,7 +2,7 @@
 
 ## Fase 00 — Foundation
 
-Status: em implementacao nesta entrega.
+Status: concluida.
 
 - Frontend React + TypeScript + Vite
 - Backend Node + TypeScript
@@ -14,20 +14,21 @@ Status: em implementacao nesta entrega.
 - Docker Compose
 - Documentacao
 
-Fora de escopo nesta fase:
+## Fase 01 — Auth, produtos e operacao inicial
 
-- Products
-- IA
-- CRM
-- Analytics
-- Integracoes
-- Autenticacao completa
+Status: concluida nesta entrega.
+
+- Cadastro, login, logout e sessao
+- Perfil
+- CRUD de produtos, links e campanhas
+- Dashboard e analytics sem dados ficticios
+- Isolamento por usuario
 
 ## Proximas fases (planejado)
 
-### Fase 01 — Auth e Users
+### Fase 02 — Tracking e distribuicao
 
-Cadastro, login, sessao, perfil e planos.
+Cliques reais, Content Calendar e Social Media.
 
 ### Fase 02 — Gestao
 

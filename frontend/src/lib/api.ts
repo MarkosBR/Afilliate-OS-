@@ -1,3 +1,13 @@
+import { AUTH_TOKEN_STORAGE_KEY } from "@affiliateos/shared";
+import type {
+  AffiliateLink,
+  AnalyticsSummary,
+  AuthPayload,
+  Product,
+  Campaign,
+  User,
+} from "@affiliateos/shared";
+
 export type HealthResponse = {
   success: true;
   status: "ok" | "degraded";
@@ -5,10 +15,118 @@ export type HealthResponse = {
   timestamp: string;
 };
 
-export async function fetchHealth(): Promise<HealthResponse> {
-  const response = await fetch("/api/health");
-  if (!response.ok) {
-    throw new Error("Health check failed");
+type ApiSuccess<T> = { success: true; data: T };
+type ApiFailure = { success: false; error: { code: string; message: string } };
+
+export class ApiError extends Error {
+  constructor(
+    public status: number,
+    public code: string,
+    message: string,
+  ) {
+    super(message);
+    this.name = "ApiError";
   }
+}
+
+function getToken() {
+  return window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
+}
+
+export function setToken(token: string | null) {
+  if (token) window.localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token);
+  else window.localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+}
+
+async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const token = getToken();
+  const headers = new Headers(init.headers);
+  if (init.body && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+
+  const response = await fetch(path, {
+    ...init,
+    headers,
+    credentials: "include",
+  });
+
+  const payload = (await response.json()) as ApiSuccess<T> | ApiFailure | HealthResponse;
+  if ("database" in payload) {
+    return payload as T;
+  }
+  if (!("success" in payload) || payload.success !== true) {
+    const failure = payload as ApiFailure;
+    throw new ApiError(
+      response.status,
+      failure.error?.code ?? "ERROR",
+      failure.error?.message ?? "Request failed",
+    );
+  }
+  return payload.data;
+}
+
+export async function fetchHealth(): Promise<HealthResponse> {
+  const response = await fetch("/api/health", { credentials: "include" });
+  if (!response.ok) throw new Error("Health check failed");
   return response.json() as Promise<HealthResponse>;
+}
+
+export const api = {
+  register: (body: {
+    name: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+  }) => request<AuthPayload>("/api/auth/register", { method: "POST", body: JSON.stringify(body) }),
+  login: (body: { email: string; password: string }) =>
+    request<AuthPayload>("/api/auth/login", { method: "POST", body: JSON.stringify(body) }),
+  logout: () => request<{ ok: boolean }>("/api/auth/logout", { method: "POST" }),
+  me: () => request<User>("/api/auth/me"),
+  updateProfile: (body: { name?: string; email?: string; avatar?: string | null }) =>
+    request<User>("/api/auth/profile", { method: "PATCH", body: JSON.stringify(body) }),
+  changePassword: (body: {
+    currentPassword: string;
+    password: string;
+    confirmPassword: string;
+  }) => request<{ ok: boolean }>("/api/auth/password", { method: "PATCH", body: JSON.stringify(body) }),
+
+  products: {
+    list: () => request<Product[]>("/api/products"),
+    get: (id: string) => request<Product>(`/api/products/${id}`),
+    create: (body: Partial<Product> & { name: string; platform: Product["platform"]; affiliateUrl: string; commission: number }) =>
+      request<Product>("/api/products", { method: "POST", body: JSON.stringify(body) }),
+    update: (id: string, body: Partial<Product>) =>
+      request<Product>(`/api/products/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
+    remove: (id: string) => request<{ ok: boolean }>(`/api/products/${id}`, { method: "DELETE" }),
+  },
+  links: {
+    list: () => request<AffiliateLink[]>("/api/links"),
+    create: (body: { productId: string; name: string; url?: string }) =>
+      request<AffiliateLink>("/api/links", { method: "POST", body: JSON.stringify(body) }),
+    update: (id: string, body: Partial<AffiliateLink>) =>
+      request<AffiliateLink>(`/api/links/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
+    remove: (id: string) => request<{ ok: boolean }>(`/api/links/${id}`, { method: "DELETE" }),
+  },
+  campaigns: {
+    list: () => request<Campaign[]>("/api/campaigns"),
+    create: (body: {
+      productId: string;
+      name: string;
+      description?: string | null;
+      budget: number;
+      status?: Campaign["status"];
+    }) => request<Campaign>("/api/campaigns", { method: "POST", body: JSON.stringify(body) }),
+    update: (id: string, body: Partial<Campaign>) =>
+      request<Campaign>(`/api/campaigns/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
+    remove: (id: string) => request<{ ok: boolean }>(`/api/campaigns/${id}`, { method: "DELETE" }),
+  },
+  analytics: {
+    summary: () => request<AnalyticsSummary>("/api/analytics/summary"),
+  },
+};
+
+export function formatCurrency(value: number) {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 }

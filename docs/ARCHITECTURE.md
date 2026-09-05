@@ -40,22 +40,26 @@ O shell possui sidebar, header e area principal. Paginas sem implementacao usam 
 
 ## Backend
 
-Express modular, organizado por dominio:
+Express modular, organizado por dominio.
 
-- `/api/health` implementado
+Implementado na Fase 1:
+
+- `/api/health`
 - `/api/auth`
 - `/api/users`
 - `/api/products`
+- `/api/links`
 - `/api/campaigns`
-- `/api/content`
 - `/api/analytics`
+
+Ainda placeholder (`501`):
+
+- `/api/content`
 - `/api/leads`
 - `/api/sales`
 - `/api/ai`
 - `/api/integrations`
 - `/api/notifications`
-
-Rotas nao implementadas respondem `501 NOT_IMPLEMENTED`.
 
 ## Seguranca (preparacao)
 
@@ -69,7 +73,7 @@ Rotas nao implementadas respondem `501 NOT_IMPLEMENTED`.
 
 ## Autenticacao
 
-A arquitetura esta preparada. Auth ainda nao esta implementada.
+Sessao HMAC com `AUTH_SECRET`, cookie HttpOnly e Bearer token. Senhas com `scrypt`. Rotas de negocio exigem usuario `ACTIVE`.
 
 ## Design system
 
