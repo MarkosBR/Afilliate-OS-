@@ -37,20 +37,31 @@ export function serializeProduct(product: Product) {
 }
 
 export function serializeLink(
-  link: AffiliateLink & { product?: Pick<Product, "id" | "name" | "platform"> },
+  link: AffiliateLink & {
+    product?: Pick<Product, "id" | "name" | "platform">;
+    campaign?: Pick<Campaign, "id" | "name" | "status"> | null;
+    _count?: { analyticsEvents?: number };
+  },
 ) {
   return {
     id: link.id,
     userId: link.userId,
     productId: link.productId,
+    campaignId: link.campaignId,
     name: link.name,
     slug: link.slug,
     url: link.url,
+    status: link.status,
+    clicks: link.clicks,
+    trackUrl: `/go/${link.slug}`,
     createdAt: link.createdAt.toISOString(),
     updatedAt: link.updatedAt.toISOString(),
     product: link.product
       ? { id: link.product.id, name: link.product.name, platform: link.product.platform }
       : undefined,
+    campaign: link.campaign
+      ? { id: link.campaign.id, name: link.campaign.name, status: link.campaign.status }
+      : null,
   };
 }
 
@@ -77,7 +88,7 @@ export function serializeCampaign(
   };
 }
 
-export function slugify(value: string) {
+export function slugify(value: string, unique = true) {
   const base = value
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -85,6 +96,15 @@ export function slugify(value: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 48);
+  if (!unique) return base || "link";
   const suffix = Math.random().toString(36).slice(2, 8);
   return `${base || "link"}-${suffix}`;
+}
+
+export function normalizeSlug(value: string) {
+  const slug = slugify(value, false);
+  if (!slug || slug.length < 2) {
+    throw new Error("INVALID_SLUG");
+  }
+  return slug;
 }

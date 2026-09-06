@@ -25,6 +25,42 @@ export function AdminDashboardPage() {
         <Metric title="Produtos" value={data.products} />
         <Metric title="Campanhas" value={data.campaigns} />
         <Metric title="Links" value={data.links} />
+        <Metric title="Links ativos" value={data.activeLinks} />
+        <Metric title="Cliques" value={data.clicks} />
+      </section>
+      <section className="grid gap-4 lg:grid-cols-2">
+        <Card>
+          <h3 className="font-semibold">Produtos com mais cliques</h3>
+          {data.topProducts.length ? (
+            <ul className="mt-4 space-y-3 text-sm">
+              {data.topProducts.map((product) => (
+                <li key={product.id} className="flex items-center justify-between">
+                  <span>{product.name}</span>
+                  <span className="text-[var(--color-text-muted)]">{product.clicks} cliques</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-4 text-sm text-[var(--color-text-muted)]">0 cliques</p>
+          )}
+        </Card>
+        <Card>
+          <h3 className="font-semibold">Cliques recentes</h3>
+          {data.recentClicks.length ? (
+            <ul className="mt-4 space-y-3 text-sm">
+              {data.recentClicks.map((item) => (
+                <li key={item.id} className="flex items-center justify-between">
+                  <span>{item.label}</span>
+                  <span className="text-[var(--color-text-muted)]">
+                    {new Date(item.createdAt).toLocaleString("pt-BR")}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-4 text-sm text-[var(--color-text-muted)]">Nenhum clique ainda.</p>
+          )}
+        </Card>
       </section>
       <Card>
         <h3 className="font-semibold">Atividade recente</h3>

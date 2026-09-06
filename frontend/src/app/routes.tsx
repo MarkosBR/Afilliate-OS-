@@ -7,6 +7,7 @@ import { LoginPage } from "../pages/LoginPage";
 import { RegisterPage } from "../pages/RegisterPage";
 import { ProductsPage } from "../pages/ProductsPage";
 import { LinksPage } from "../pages/LinksPage";
+import { LinkDetailPage } from "../pages/LinkDetailPage";
 import { CampaignsPage } from "../pages/CampaignsPage";
 import { AnalyticsPage } from "../pages/AnalyticsPage";
 import { AutomationPage } from "../pages/AutomationPage";
@@ -48,6 +49,7 @@ export const router = createBrowserRouter([
       { path: "products/:id", element: <ProductsPage /> },
       { path: "affiliates", element: <PlaceholderPage title="Afiliados" module="Afiliados" /> },
       { path: "links", element: <LinksPage /> },
+      { path: "links/:id", element: <LinkDetailPage /> },
       { path: "content", element: <PlaceholderPage title="Conteudo" module="Conteudo" /> },
       { path: "campaigns", element: <CampaignsPage /> },
       { path: "automation", element: <AutomationPage /> },

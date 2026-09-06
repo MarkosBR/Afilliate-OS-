@@ -5,7 +5,7 @@ import { Badge } from "../components/ui/Badge";
 import { Loading } from "../components/ui/Loading";
 import { ErrorState } from "../components/ui/ErrorState";
 import { Select } from "../components/ui/Select";
-import { api, fetchHealth, formatCurrency } from "../lib/api";
+import { api, fetchHealth } from "../lib/api";
 import { useAuth } from "../lib/auth";
 
 export function DashboardPage() {
@@ -45,11 +45,9 @@ export function DashboardPage() {
       {overview.data ? (
         <>
           <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            <Metric title="Receita" value={formatCurrency(overview.data.summary.revenue)} />
             <Metric title="Cliques" value={String(overview.data.summary.clicks)} />
-            <Metric title="Conversoes" value={String(overview.data.summary.conversions)} />
-            <Metric title="CTR" value={`${overview.data.summary.ctr}%`} />
             <Metric title="Produtos ativos" value={String(overview.data.summary.activeProducts)} />
+            <Metric title="Links ativos" value={String(overview.data.summary.activeLinks)} />
             <Metric title="Campanhas ativas" value={String(overview.data.summary.activeCampaigns)} />
           </section>
 
@@ -75,20 +73,18 @@ export function DashboardPage() {
 
           <section className="grid gap-4 lg:grid-cols-2">
             <Card>
-              <CardTitle>Produtos com melhor desempenho</CardTitle>
-              {overview.data.topProducts.length ? (
+              <CardTitle>Links com melhor desempenho</CardTitle>
+              {overview.data.topLinks.length ? (
                 <ul className="mt-4 space-y-3">
-                  {overview.data.topProducts.map((product) => (
-                    <li key={product.id} className="flex items-center justify-between text-sm">
-                      <span>{product.name}</span>
-                      <span className="text-[var(--color-text-muted)]">
-                        {product.conversions} conv. · {formatCurrency(product.revenue)}
-                      </span>
+                  {overview.data.topLinks.map((link) => (
+                    <li key={link.id} className="flex items-center justify-between text-sm">
+                      <span>{link.name}</span>
+                      <span className="text-[var(--color-text-muted)]">{link.clicks} cliques</span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="mt-4 text-sm text-[var(--color-text-muted)]">0 produtos</p>
+                <p className="mt-4 text-sm text-[var(--color-text-muted)]">0 links</p>
               )}
             </Card>
             <Card>

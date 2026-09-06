@@ -60,22 +60,35 @@ export async function getAdminDashboard() {
   const since = new Date();
   since.setDate(since.getDate() - 7);
 
-  const [users, activeUsers, newUsers, products, campaigns, links, recentLogs] = await Promise.all([
-    prisma.user.count(),
-    prisma.user.count({ where: { status: "ACTIVE" } }),
-    prisma.user.count({ where: { createdAt: { gte: since } } }),
-    prisma.product.count(),
-    prisma.campaign.count(),
-    prisma.affiliateLink.count(),
-    prisma.adminLog.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 8,
-      include: {
-        admin: { select: { id: true, name: true, email: true } },
-        target: { select: { id: true, name: true, email: true } },
-      },
-    }),
-  ]);
+  const [users, activeUsers, newUsers, products, campaigns, links, activeLinks, clicks, topProducts, recentLogs, recentClicks] =
+    await Promise.all([
+      prisma.user.count(),
+      prisma.user.count({ where: { status: "ACTIVE" } }),
+      prisma.user.count({ where: { createdAt: { gte: since } } }),
+      prisma.product.count(),
+      prisma.campaign.count(),
+      prisma.affiliateLink.count(),
+      prisma.affiliateLink.count({ where: { status: "ACTIVE" } }),
+      prisma.analyticsEvent.count({ where: { type: "CLICK" } }),
+      prisma.product.findMany({
+        take: 5,
+        include: { affiliateLinks: { select: { clicks: true } } },
+      }),
+      prisma.adminLog.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 8,
+        include: {
+          admin: { select: { id: true, name: true, email: true } },
+          target: { select: { id: true, name: true, email: true } },
+        },
+      }),
+      prisma.analyticsEvent.findMany({
+        where: { type: "CLICK" },
+        orderBy: { createdAt: "desc" },
+        take: 8,
+        include: { product: { select: { name: true } }, link: { select: { name: true, slug: true } } },
+      }),
+    ]);
 
   return {
     users,
@@ -84,6 +97,21 @@ export async function getAdminDashboard() {
     products,
     campaigns,
     links,
+    activeLinks,
+    clicks,
+    topProducts: topProducts
+      .map((product) => ({
+        id: product.id,
+        name: product.name,
+        clicks: product.affiliateLinks.reduce((sum, link) => sum + link.clicks, 0),
+      }))
+      .sort((a, b) => b.clicks - a.clicks)
+      .slice(0, 5),
+    recentClicks: recentClicks.map((event) => ({
+      id: event.id,
+      createdAt: event.createdAt.toISOString(),
+      label: event.link?.name ?? event.product?.name ?? "click",
+    })),
     recentLogs: recentLogs.map(serializeAdminLog),
   };
 }

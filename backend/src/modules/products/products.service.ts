@@ -7,8 +7,16 @@ export async function listProducts(userId: string) {
   const products = await prisma.product.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
+    include: {
+      _count: { select: { affiliateLinks: true } },
+      affiliateLinks: { select: { clicks: true } },
+    },
   });
-  return products.map(serializeProduct);
+  return products.map((product) => ({
+    ...serializeProduct(product),
+    linksCount: product._count.affiliateLinks,
+    clicks: product.affiliateLinks.reduce((sum, link) => sum + link.clicks, 0),
+  }));
 }
 
 export async function getProduct(userId: string, id: string) {

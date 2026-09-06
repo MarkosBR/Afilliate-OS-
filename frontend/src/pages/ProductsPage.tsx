@@ -1,4 +1,5 @@
 import { FormEvent, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Product, ProductPlatform, ProductStatus } from "@affiliateos/shared";
 import { api } from "../lib/api";
@@ -25,6 +26,7 @@ const emptyForm = {
 };
 
 export function ProductsPage() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const toast = useToast();
   const products = useQuery({ queryKey: ["products"], queryFn: api.products.list });
@@ -115,7 +117,8 @@ export function ProductsPage() {
             <TR>
               <TH>Nome</TH>
               <TH>Plataforma</TH>
-              <TH>Comissao</TH>
+              <TH>Links</TH>
+              <TH>Cliques</TH>
               <TH>Status</TH>
               <TH></TH>
             </TR>
@@ -128,11 +131,15 @@ export function ProductsPage() {
                   <p className="text-xs text-[var(--color-text-muted)]">{product.externalId || product.affiliateUrl}</p>
                 </TD>
                 <TD>{product.platform}</TD>
-                <TD>{product.commission}%</TD>
+                <TD>{product.linksCount ?? 0}</TD>
+                <TD>{product.clicks ?? 0}</TD>
                 <TD>
                   <Badge tone={product.status === "ACTIVE" ? "success" : "neutral"}>{product.status}</Badge>
                 </TD>
                 <TD className="text-right">
+                  <Button variant="ghost" size="sm" onClick={() => navigate("/links")}>
+                    Links
+                  </Button>
                   <Button variant="ghost" size="sm" onClick={() => openEdit(product)}>
                     Editar
                   </Button>

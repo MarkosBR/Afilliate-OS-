@@ -3,6 +3,7 @@ export type UserStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED" | "PENDING";
 export type UserRole = "USER" | "ADMIN";
 export type ProductPlatform = "HOTMART" | "EDUZZ" | "KIWIFY" | "OTHER";
 export type ProductStatus = "ACTIVE" | "INACTIVE";
+export type LinkStatus = "ACTIVE" | "INACTIVE";
 export type CampaignStatus = "DRAFT" | "ACTIVE" | "PAUSED" | "COMPLETED";
 export type ContentStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 
@@ -31,18 +32,25 @@ export type Product = {
   status: ProductStatus;
   createdAt: string;
   updatedAt: string;
+  linksCount?: number;
+  clicks?: number;
 };
 
 export type AffiliateLink = {
   id: string;
   userId: string;
   productId: string;
+  campaignId: string | null;
   name: string;
   slug: string;
   url: string;
+  status: LinkStatus;
+  clicks: number;
+  trackUrl: string;
   createdAt: string;
   updatedAt: string;
   product?: Pick<Product, "id" | "name" | "platform">;
+  campaign?: { id: string; name: string; status: CampaignStatus } | null;
 };
 
 export type Campaign = {
@@ -64,6 +72,7 @@ export type AnalyticsSummary = {
   campaigns: number;
   activeProducts: number;
   activeCampaigns: number;
+  activeLinks: number;
   clicks: number;
   conversions: number;
   revenue: number;
@@ -82,6 +91,14 @@ export type DashboardOverview = {
   series: DashboardPoint[];
   recentCampaigns: Campaign[];
   topProducts: Array<Product & { conversions: number; revenue: number }>;
+  topLinks: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    clicks: number;
+    status: LinkStatus;
+    product?: Pick<Product, "id" | "name" | "platform">;
+  }>;
   recentActivity: Array<{
     id: string;
     type: "CLICK" | "CONVERSION" | "PRODUCT" | "CAMPAIGN" | "LINK";
@@ -104,7 +121,38 @@ export type AdminDashboard = {
   products: number;
   campaigns: number;
   links: number;
+  activeLinks: number;
+  clicks: number;
+  topProducts: Array<{ id: string; name: string; clicks: number }>;
+  recentClicks: Array<{ id: string; createdAt: string; label: string }>;
   recentLogs: AdminLog[];
+};
+
+export type LinkStats = {
+  link: AffiliateLink;
+  clicks: number;
+  periodClicks: number;
+  recentClicks: Array<{
+    id: string;
+    createdAt: string;
+    referrer: string | null;
+    utmSource: string | null;
+    utmMedium: string | null;
+    utmCampaign: string | null;
+    utmContent: string | null;
+    utmTerm: string | null;
+  }>;
+  origins: Array<{ label: string; count: number }>;
+  utmCampaigns: Array<{ label: string; count: number }>;
+};
+
+export type AnalyticsBreakdown = {
+  summary: AnalyticsSummary;
+  days: number;
+  clicksByProduct: Array<{ id: string; name: string; clicks: number }>;
+  clicksByLink: Array<{ id: string; name: string; slug: string; clicks: number; totalClicks: number }>;
+  origins: Array<{ label: string; count: number }>;
+  utmCampaigns: Array<{ label: string; count: number }>;
 };
 
 export type AdminLog = {

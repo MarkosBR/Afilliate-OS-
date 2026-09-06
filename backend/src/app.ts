@@ -14,6 +14,7 @@ import { linksRouter } from "./modules/links/links.routes.js";
 import { campaignsRouter } from "./modules/campaigns/campaigns.routes.js";
 import { analyticsRouter } from "./modules/analytics/analytics.routes.js";
 import { adminRouter } from "./modules/admin/admin.routes.js";
+import { trackingRouter } from "./modules/tracking/tracking.routes.js";
 
 export function createApp() {
   const app = express();
@@ -48,6 +49,7 @@ export function createApp() {
   app.use("/api/campaigns", campaignsRouter);
   app.use("/api/analytics", analyticsRouter);
   app.use("/api/admin", adminRouter);
+  app.use("/go", trackingRouter);
   app.use("/api/content", createPlaceholderRouter("Content"));
   app.use("/api/leads", createPlaceholderRouter("Leads"));
   app.use("/api/sales", createPlaceholderRouter("Sales"));

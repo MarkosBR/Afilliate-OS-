@@ -12,13 +12,14 @@ function dateKey(date: Date) {
 
 export async function getAnalyticsSummary(userId: string, since?: Date) {
   const createdAt = since ? { gte: since } : undefined;
-  const [products, links, campaigns, activeProducts, activeCampaigns, clicks, conversions, revenue] =
+  const [products, links, campaigns, activeProducts, activeCampaigns, activeLinks, clicks, conversions, revenue] =
     await Promise.all([
       prisma.product.count({ where: { userId } }),
       prisma.affiliateLink.count({ where: { userId } }),
       prisma.campaign.count({ where: { userId } }),
       prisma.product.count({ where: { userId, status: "ACTIVE" } }),
       prisma.campaign.count({ where: { userId, status: "ACTIVE" } }),
+      prisma.affiliateLink.count({ where: { userId, status: "ACTIVE" } }),
       prisma.analyticsEvent.count({ where: { userId, type: "CLICK", ...(createdAt ? { createdAt } : {}) } }),
       prisma.analyticsEvent.count({
         where: { userId, type: "CONVERSION", ...(createdAt ? { createdAt } : {}) },
@@ -38,6 +39,7 @@ export async function getAnalyticsSummary(userId: string, since?: Date) {
     campaigns,
     activeProducts,
     activeCampaigns,
+    activeLinks,
     clicks,
     conversions,
     revenue: revenueValue,
@@ -50,7 +52,7 @@ export async function getDashboardOverview(userId: string, days = 7) {
   const since = startOfDay(new Date());
   since.setDate(since.getDate() - (safeDays - 1));
 
-  const [summary, events, recentCampaigns, products, recentProducts, recentLinks, recentCampaignCreates] =
+  const [summary, events, recentCampaigns, products, recentProducts, recentLinks, recentCampaignCreates, topLinkRows] =
     await Promise.all([
       getAnalyticsSummary(userId, since),
       prisma.analyticsEvent.findMany({
@@ -75,6 +77,12 @@ export async function getDashboardOverview(userId: string, days = 7) {
       prisma.product.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 5 }),
       prisma.affiliateLink.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 5 }),
       prisma.campaign.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 5 }),
+      prisma.affiliateLink.findMany({
+        where: { userId },
+        orderBy: { clicks: "desc" },
+        take: 5,
+        include: { product: { select: { id: true, name: true, platform: true } } },
+      }),
     ]);
 
   const seriesMap = new Map<string, { clicks: number; conversions: number; revenue: number }>();
@@ -170,6 +178,70 @@ export async function getDashboardOverview(userId: string, days = 7) {
       product: campaign.product,
     })),
     topProducts,
+    topLinks: topLinkRows.map((link) => ({
+      id: link.id,
+      name: link.name,
+      slug: link.slug,
+      clicks: link.clicks,
+      status: link.status,
+      product: link.product,
+    })),
     recentActivity,
+  };
+}
+
+export async function getAnalyticsBreakdown(userId: string, days = 7) {
+  const safeDays = [7, 14, 30].includes(days) ? days : 7;
+  const since = startOfDay(new Date());
+  since.setDate(since.getDate() - (safeDays - 1));
+  const summary = await getAnalyticsSummary(userId, since);
+  const events = await prisma.analyticsEvent.findMany({
+    where: { userId, type: "CLICK", createdAt: { gte: since } },
+    select: {
+      productId: true,
+      linkId: true,
+      referrer: true,
+      utmSource: true,
+      utmMedium: true,
+      utmCampaign: true,
+      createdAt: true,
+    },
+  });
+
+  const byProduct = new Map<string, number>();
+  const byLink = new Map<string, number>();
+  const origins = new Map<string, number>();
+  const utms = new Map<string, number>();
+  for (const event of events) {
+    if (event.productId) byProduct.set(event.productId, (byProduct.get(event.productId) ?? 0) + 1);
+    if (event.linkId) byLink.set(event.linkId, (byLink.get(event.linkId) ?? 0) + 1);
+    const origin = event.utmSource || event.referrer || "direct";
+    origins.set(origin, (origins.get(origin) ?? 0) + 1);
+    const utm = [event.utmSource, event.utmMedium, event.utmCampaign].filter(Boolean).join(" / ");
+    if (utm) utms.set(utm, (utms.get(utm) ?? 0) + 1);
+  }
+
+  const [products, links] = await Promise.all([
+    prisma.product.findMany({ where: { userId }, select: { id: true, name: true } }),
+    prisma.affiliateLink.findMany({ where: { userId }, select: { id: true, name: true, slug: true, clicks: true } }),
+  ]);
+
+  return {
+    summary,
+    days: safeDays,
+    clicksByProduct: products
+      .map((product) => ({ id: product.id, name: product.name, clicks: byProduct.get(product.id) ?? 0 }))
+      .sort((a, b) => b.clicks - a.clicks),
+    clicksByLink: links
+      .map((link) => ({
+        id: link.id,
+        name: link.name,
+        slug: link.slug,
+        clicks: byLink.get(link.id) ?? 0,
+        totalClicks: link.clicks,
+      }))
+      .sort((a, b) => b.clicks - a.clicks),
+    origins: [...origins.entries()].map(([label, count]) => ({ label, count })).sort((a, b) => b.count - a.count),
+    utmCampaigns: [...utms.entries()].map(([label, count]) => ({ label, count })).sort((a, b) => b.count - a.count),
   };
 }

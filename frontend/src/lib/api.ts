@@ -3,10 +3,12 @@ import type {
   AdminDashboard,
   AdminLog,
   AffiliateLink,
+  AnalyticsBreakdown,
   AnalyticsSummary,
   AuthPayload,
   Campaign,
   DashboardOverview,
+  LinkStats,
   Paginated,
   Product,
   User,
@@ -109,8 +111,16 @@ export const api = {
   },
   links: {
     list: () => request<AffiliateLink[]>("/api/links"),
-    create: (body: { productId: string; name: string; url?: string }) =>
-      request<AffiliateLink>("/api/links", { method: "POST", body: JSON.stringify(body) }),
+    get: (id: string) => request<AffiliateLink>(`/api/links/${id}`),
+    stats: (id: string, days = 7) => request<LinkStats>(`/api/links/${id}/stats?days=${days}`),
+    create: (body: {
+      productId: string;
+      name: string;
+      url?: string;
+      slug?: string;
+      status?: AffiliateLink["status"];
+      campaignId?: string | null;
+    }) => request<AffiliateLink>("/api/links", { method: "POST", body: JSON.stringify(body) }),
     update: (id: string, body: Partial<AffiliateLink>) =>
       request<AffiliateLink>(`/api/links/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
     remove: (id: string) => request<{ ok: boolean }>(`/api/links/${id}`, { method: "DELETE" }),
@@ -131,6 +141,7 @@ export const api = {
   analytics: {
     summary: () => request<AnalyticsSummary>("/api/analytics/summary"),
     overview: (days = 7) => request<DashboardOverview>(`/api/analytics/overview?days=${days}`),
+    breakdown: (days = 7) => request<AnalyticsBreakdown>(`/api/analytics/breakdown?days=${days}`),
   },
   admin: {
     dashboard: () => request<AdminDashboard>("/api/admin/dashboard"),
