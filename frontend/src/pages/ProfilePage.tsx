@@ -2,6 +2,7 @@ import { FormEvent, useState } from "react";
 import { useAuth } from "../lib/auth";
 import { api, ApiError } from "../lib/api";
 import { Button } from "../components/ui/Button";
+import { Badge } from "../components/ui/Badge";
 import { Card, CardDescription, CardTitle } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { useToast } from "../components/ui/Toast";
@@ -65,6 +66,13 @@ export function ProfilePage() {
       <Card>
         <CardTitle>Perfil</CardTitle>
         <CardDescription>Altere nome, email e avatar.</CardDescription>
+        <div className="mt-3 flex flex-wrap gap-2 text-sm">
+          <Badge tone="accent">{user?.role ?? "USER"}</Badge>
+          <Badge tone={user?.status === "ACTIVE" ? "success" : "warning"}>{user?.status}</Badge>
+          <span className="text-[var(--color-text-muted)]">
+            Ultimo login: {user?.lastLogin ? new Date(user.lastLogin).toLocaleString("pt-BR") : "nunca"}
+          </span>
+        </div>
         <form className="mt-4 flex flex-col gap-3" onSubmit={onSaveProfile}>
           <Input label="Nome" required value={name} onChange={(e) => setName(e.target.value)} />
           <Input label="Email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />

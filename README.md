@@ -2,7 +2,7 @@
 
 AffiliateOS — Seu sistema operacional para afiliados.
 
-Fase 1: autenticacao, perfil, produtos, links, campanhas e analytics inicial sobre a foundation da Fase 0.
+Fase 2: dashboard operacional, roles USER/ADMIN e area `/admin` sobre a Fase 1.
 
 ## Stack
 
@@ -109,17 +109,17 @@ docs/       arquitetura e roadmap
 scripts/    utilitarios locais
 ```
 
-## Funcionalidades da Fase 1
+## Funcionalidades da Fase 2
 
-- Cadastro, login, logout e sessao
-- Rotas protegidas
-- Perfil (`/settings/profile`)
-- Dashboard com metricas reais (zeros quando nao ha dados)
-- CRUD de produtos, links e campanhas
-- Analytics inicial sem dados ficticios
-- Automacao apenas como estrutura "Em breve"
-- Isolamento de dados por usuario
+- Identidade visual operacional
+- Dashboard com periodo, grafico e zeros reais
+- Roles USER e ADMIN
+- APIs `/api/admin/*` com `requireAdmin`
+- UI `/admin` (dashboard, usuarios, produtos, campanhas, logs)
+- Logs administrativos sem secrets
+
+A Fase 1 permanece: auth, perfil, CRUD, isolamento e analytics.
 
 ## Proximas fases
 
-Auth social, tracking real de cliques, CRM, IA, integracoes e automacoes reais. Ver `docs/ROADMAP.md` e `PHASE-1.md`.
+Auth social, tracking real de cliques, CRM, IA, integracoes e automacoes reais. Ver `docs/ROADMAP.md`, `PHASE-1.md` e `PHASE-2.md`.

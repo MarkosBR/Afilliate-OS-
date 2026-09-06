@@ -13,6 +13,7 @@ export function serializeUser(user: User) {
     avatar: user.avatar,
     plan: user.plan,
     status: user.status,
+    role: user.role,
     lastLogin: user.lastLogin?.toISOString() ?? null,
     createdAt: user.createdAt.toISOString(),
     updatedAt: user.updatedAt.toISOString(),

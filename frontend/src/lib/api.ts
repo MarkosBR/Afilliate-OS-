@@ -1,11 +1,17 @@
 import { AUTH_TOKEN_STORAGE_KEY } from "@affiliateos/shared";
 import type {
+  AdminDashboard,
+  AdminLog,
   AffiliateLink,
   AnalyticsSummary,
   AuthPayload,
-  Product,
   Campaign,
+  DashboardOverview,
+  Paginated,
+  Product,
   User,
+  UserRole,
+  UserStatus,
 } from "@affiliateos/shared";
 
 export type HealthResponse = {
@@ -124,6 +130,21 @@ export const api = {
   },
   analytics: {
     summary: () => request<AnalyticsSummary>("/api/analytics/summary"),
+    overview: (days = 7) => request<DashboardOverview>(`/api/analytics/overview?days=${days}`),
+  },
+  admin: {
+    dashboard: () => request<AdminDashboard>("/api/admin/dashboard"),
+    users: (params = "") => request<Paginated<User>>(`/api/admin/users${params}`),
+    user: (id: string) => request<User>(`/api/admin/users/${id}`),
+    updateUser: (id: string, body: { status?: UserStatus; role?: UserRole }) =>
+      request<User>(`/api/admin/users/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
+    products: (params = "") =>
+      request<Paginated<Product & { owner: Pick<User, "id" | "name" | "email"> }>>(`/api/admin/products${params}`),
+    updateProduct: (id: string, body: { status: Product["status"] }) =>
+      request<Product>(`/api/admin/products/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
+    campaigns: (params = "") =>
+      request<Paginated<Campaign & { owner: Pick<User, "id" | "name" | "email"> }>>(`/api/admin/campaigns${params}`),
+    logs: (params = "") => request<Paginated<AdminLog>>(`/api/admin/logs${params}`),
   },
 };
 

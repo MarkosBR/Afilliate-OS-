@@ -35,3 +35,10 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   req.user = user;
   next();
 }
+
+export function requireAdmin(req: Request, res: Response, next: NextFunction) {
+  if (!req.user || req.user.role !== "ADMIN") {
+    return sendError(res, 403, "FORBIDDEN", "Administrator access required.");
+  }
+  next();
+}

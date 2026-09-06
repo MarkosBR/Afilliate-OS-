@@ -1,6 +1,6 @@
 import { Navigate, createBrowserRouter } from "react-router-dom";
 import { AppShell } from "../components/layout/AppShell";
-import { ProtectedRoute, PublicOnlyRoute } from "../components/auth/ProtectedRoute";
+import { AdminRoute, ProtectedRoute, PublicOnlyRoute } from "../components/auth/ProtectedRoute";
 import { DashboardPage } from "../pages/DashboardPage";
 import { PlaceholderPage } from "../pages/PlaceholderPage";
 import { LoginPage } from "../pages/LoginPage";
@@ -11,6 +11,11 @@ import { CampaignsPage } from "../pages/CampaignsPage";
 import { AnalyticsPage } from "../pages/AnalyticsPage";
 import { AutomationPage } from "../pages/AutomationPage";
 import { ProfilePage } from "../pages/ProfilePage";
+import { AdminDashboardPage } from "../pages/admin/AdminDashboardPage";
+import { AdminUsersPage } from "../pages/admin/AdminUsersPage";
+import { AdminProductsPage } from "../pages/admin/AdminProductsPage";
+import { AdminCampaignsPage } from "../pages/admin/AdminCampaignsPage";
+import { AdminLogsPage } from "../pages/admin/AdminLogsPage";
 
 export const router = createBrowserRouter([
   {
@@ -49,6 +54,47 @@ export const router = createBrowserRouter([
       { path: "analytics", element: <AnalyticsPage /> },
       { path: "settings", element: <Navigate to="/settings/profile" replace /> },
       { path: "settings/profile", element: <ProfilePage /> },
+      { path: "admin", element: <Navigate to="/admin/dashboard" replace /> },
+      {
+        path: "admin/dashboard",
+        element: (
+          <AdminRoute>
+            <AdminDashboardPage />
+          </AdminRoute>
+        ),
+      },
+      {
+        path: "admin/users",
+        element: (
+          <AdminRoute>
+            <AdminUsersPage />
+          </AdminRoute>
+        ),
+      },
+      {
+        path: "admin/products",
+        element: (
+          <AdminRoute>
+            <AdminProductsPage />
+          </AdminRoute>
+        ),
+      },
+      {
+        path: "admin/campaigns",
+        element: (
+          <AdminRoute>
+            <AdminCampaignsPage />
+          </AdminRoute>
+        ),
+      },
+      {
+        path: "admin/logs",
+        element: (
+          <AdminRoute>
+            <AdminLogsPage />
+          </AdminRoute>
+        ),
+      },
       { path: "storyforge", element: <PlaceholderPage title="StoryForge AI" module="Criacao" /> },
       { path: "viral-studio", element: <PlaceholderPage title="Viral Studio" module="Criacao" /> },
       { path: "creative-forge", element: <PlaceholderPage title="Creative Forge" module="Criacao" /> },

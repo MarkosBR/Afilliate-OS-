@@ -15,6 +15,7 @@ import {
   sessionCookie,
   updateProfile,
 } from "./auth.service.js";
+import { recordAdminLogin } from "../admin/admin.controller.js";
 
 export async function registerController(req: Request, res: Response, next: NextFunction) {
   try {
@@ -32,6 +33,9 @@ export async function loginController(req: Request, res: Response, next: NextFun
     const input = loginSchema.parse(req.body);
     const payload = await loginUser(input);
     res.setHeader("Set-Cookie", sessionCookie(payload.token));
+    if (payload.user.role === "ADMIN") {
+      await recordAdminLogin(payload.user.id);
+    }
     return sendSuccess(res, payload);
   } catch (error) {
     next(error);

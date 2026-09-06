@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { NAVIGATION } from "@affiliateos/shared";
 import { cn } from "../../lib/cn";
+import { useAuth } from "../../lib/auth";
 
 type Props = {
   open: boolean;
@@ -8,6 +9,8 @@ type Props = {
 };
 
 export function Sidebar({ open, onClose }: Props) {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "ADMIN";
   return (
     <>
       {open ? (
@@ -20,7 +23,7 @@ export function Sidebar({ open, onClose }: Props) {
       ) : null}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-[var(--color-border)] bg-[var(--color-surface)] transition-transform lg:static lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-[var(--color-border)] bg-[color-mix(in_srgb,var(--color-surface)_92%,transparent)] backdrop-blur-sm transition-transform lg:static lg:translate-x-0",
           open ? "translate-x-0" : "-translate-x-full",
         )}
       >
@@ -34,7 +37,7 @@ export function Sidebar({ open, onClose }: Props) {
           </div>
         </div>
         <nav className="flex-1 overflow-y-auto px-3 py-4">
-          {NAVIGATION.map((section) => (
+          {NAVIGATION.filter((section) => isAdmin || section.id !== "admin").map((section) => (
             <div key={section.id} className="mb-5">
               <p className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
                 {section.label}
