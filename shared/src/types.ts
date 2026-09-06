@@ -74,9 +74,35 @@ export type AnalyticsSummary = {
   activeCampaigns: number;
   activeLinks: number;
   clicks: number;
+  uniqueClicks: number;
   conversions: number;
   revenue: number;
   ctr: number;
+};
+
+export type AnalyticsCount = { label: string; count: number };
+
+export type AnalyticsReport = {
+  from: string;
+  to: string;
+  summary: {
+    clicks: number;
+    uniqueClicks: number;
+    activeLinks: number;
+    activeCampaigns: number;
+    topSource: string;
+  };
+  series: DashboardPoint[];
+  topLinks: Array<{ id: string; name: string; slug?: string; clicks: number }>;
+  topCampaigns: Array<{ id: string; name: string; clicks: number }>;
+  topSources: AnalyticsCount[];
+  topReferrers: AnalyticsCount[];
+  utmSources: AnalyticsCount[];
+  utmMediums: AnalyticsCount[];
+  utmCampaigns: AnalyticsCount[];
+  totals?: AnalyticsSummary;
+  clicksByProduct?: Array<{ id: string; name: string; clicks: number }>;
+  clicksByLink?: Array<{ id: string; name: string; slug: string; clicks: number; totalClicks: number }>;
 };
 
 export type DashboardPoint = {

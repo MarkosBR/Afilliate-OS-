@@ -1,11 +1,15 @@
 import type { NextFunction, Request, Response } from "express";
-import { z } from "zod";
 import { sendSuccess } from "../../lib/http.js";
-import { getAnalyticsBreakdown, getAnalyticsSummary, getDashboardOverview } from "./analytics.service.js";
-
-const overviewQuerySchema = z.object({
-  days: z.coerce.number().int().optional(),
-});
+import { routeId } from "../../lib/params.js";
+import { analyticsQuerySchema } from "./analytics.schemas.js";
+import {
+  getAnalyticsBreakdown,
+  getAnalyticsSummary,
+  getCampaignAnalytics,
+  getDashboardOverview,
+  getFilteredAnalytics,
+  getLinkAnalytics,
+} from "./analytics.service.js";
 
 export async function analyticsSummaryController(req: Request, res: Response, next: NextFunction) {
   try {
@@ -17,7 +21,8 @@ export async function analyticsSummaryController(req: Request, res: Response, ne
 
 export async function analyticsOverviewController(req: Request, res: Response, next: NextFunction) {
   try {
-    const { days } = overviewQuerySchema.parse(req.query);
+    const query = analyticsQuerySchema.parse(req.query);
+    const days = query.range === "30d" ? 30 : query.range === "14d" ? 14 : query.days ?? 7;
     return sendSuccess(res, await getDashboardOverview(req.user!.id, days));
   } catch (error) {
     next(error);
@@ -26,8 +31,36 @@ export async function analyticsOverviewController(req: Request, res: Response, n
 
 export async function analyticsBreakdownController(req: Request, res: Response, next: NextFunction) {
   try {
-    const { days } = overviewQuerySchema.parse(req.query);
+    const query = analyticsQuerySchema.parse(req.query);
+    const days = query.range === "30d" ? 30 : query.range === "14d" ? 14 : query.days ?? 7;
     return sendSuccess(res, await getAnalyticsBreakdown(req.user!.id, days));
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function analyticsReportController(req: Request, res: Response, next: NextFunction) {
+  try {
+    const query = analyticsQuerySchema.parse(req.query);
+    return sendSuccess(res, await getFilteredAnalytics(req.user!.id, query));
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function analyticsLinkController(req: Request, res: Response, next: NextFunction) {
+  try {
+    const query = analyticsQuerySchema.parse(req.query);
+    return sendSuccess(res, await getLinkAnalytics(req.user!.id, routeId(req, "linkId"), query));
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function analyticsCampaignController(req: Request, res: Response, next: NextFunction) {
+  try {
+    const query = analyticsQuerySchema.parse(req.query);
+    return sendSuccess(res, await getCampaignAnalytics(req.user!.id, routeId(req, "campaignId"), query));
   } catch (error) {
     next(error);
   }

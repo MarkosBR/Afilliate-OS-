@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { requireAdmin, requireAuth } from "../../middleware/auth.js";
 import {
+  adminAnalyticsController,
   adminCampaignsController,
   adminDashboardController,
   adminLogsController,
@@ -15,6 +16,7 @@ export const adminRouter = Router();
 
 adminRouter.use(requireAuth, requireAdmin);
 adminRouter.get("/dashboard", adminDashboardController);
+adminRouter.get("/analytics", adminAnalyticsController);
 adminRouter.get("/users", adminUsersController);
 adminRouter.get("/users/:id", adminUserGetController);
 adminRouter.patch("/users/:id", adminUserPatchController);

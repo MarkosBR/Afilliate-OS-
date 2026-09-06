@@ -9,6 +9,8 @@ import {
   adminUserPatchSchema,
   adminUsersQuerySchema,
 } from "./admin.schemas.js";
+import { analyticsQuerySchema } from "../analytics/analytics.schemas.js";
+import { getAdminAnalytics } from "../analytics/analytics.service.js";
 import {
   getAdminDashboard,
   getAdminUser,
@@ -24,6 +26,15 @@ import {
 export async function adminDashboardController(req: Request, res: Response, next: NextFunction) {
   try {
     return sendSuccess(res, await getAdminDashboard());
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function adminAnalyticsController(req: Request, res: Response, next: NextFunction) {
+  try {
+    const query = analyticsQuerySchema.parse(req.query);
+    return sendSuccess(res, await getAdminAnalytics(query));
   } catch (error) {
     next(error);
   }

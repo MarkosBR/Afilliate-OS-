@@ -4,6 +4,7 @@ import type {
   AdminLog,
   AffiliateLink,
   AnalyticsBreakdown,
+  AnalyticsReport,
   AnalyticsSummary,
   AuthPayload,
   Campaign,
@@ -142,6 +143,12 @@ export const api = {
     summary: () => request<AnalyticsSummary>("/api/analytics/summary"),
     overview: (days = 7) => request<DashboardOverview>(`/api/analytics/overview?days=${days}`),
     breakdown: (days = 7) => request<AnalyticsBreakdown>(`/api/analytics/breakdown?days=${days}`),
+    report: (params: string) => request<AnalyticsReport>(`/api/analytics/report${params}`),
+    link: (id: string, params = "") => request<AnalyticsReport & { link: AffiliateLink; recentClicks: LinkStats["recentClicks"] }>(`/api/analytics/links/${id}${params}`),
+    campaign: (id: string, params = "") =>
+      request<AnalyticsReport & { campaign: Pick<Campaign, "id" | "name" | "status">; links: AffiliateLink[] }>(
+        `/api/analytics/campaigns/${id}${params}`,
+      ),
   },
   admin: {
     dashboard: () => request<AdminDashboard>("/api/admin/dashboard"),
@@ -156,6 +163,7 @@ export const api = {
     campaigns: (params = "") =>
       request<Paginated<Campaign & { owner: Pick<User, "id" | "name" | "email"> }>>(`/api/admin/campaigns${params}`),
     logs: (params = "") => request<Paginated<AdminLog>>(`/api/admin/logs${params}`),
+    analytics: (params = "") => request<AnalyticsReport>(`/api/admin/analytics${params}`),
   },
 };
 

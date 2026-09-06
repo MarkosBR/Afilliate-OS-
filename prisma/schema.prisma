@@ -206,6 +206,12 @@ model AnalyticsEvent {
   @@index([type])
   @@index([createdAt])
   @@index([fingerprint])
+  @@index([utmSource])
+  @@index([utmMedium])
+  @@index([utmCampaign])
+  @@index([userId, type, createdAt])
+  @@index([linkId, type, createdAt])
+  @@index([campaignId, type, createdAt])
   @@map("analytics")
 }
 

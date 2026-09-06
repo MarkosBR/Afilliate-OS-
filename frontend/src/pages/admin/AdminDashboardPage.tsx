@@ -6,6 +6,7 @@ import { Loading } from "../../components/ui/Loading";
 
 export function AdminDashboardPage() {
   const dashboard = useQuery({ queryKey: ["admin-dashboard"], queryFn: api.admin.dashboard });
+  const analytics = useQuery({ queryKey: ["admin-analytics"], queryFn: () => api.admin.analytics("?range=7d") });
 
   if (dashboard.isLoading) return <Loading label="Carregando administracao..." />;
   if (dashboard.isError || !dashboard.data) return <ErrorState onRetry={() => dashboard.refetch()} />;
@@ -27,6 +28,7 @@ export function AdminDashboardPage() {
         <Metric title="Links" value={data.links} />
         <Metric title="Links ativos" value={data.activeLinks} />
         <Metric title="Cliques" value={data.clicks} />
+        <Metric title="Cliques unicos (7d)" value={analytics.data?.summary.uniqueClicks ?? 0} />
       </section>
       <section className="grid gap-4 lg:grid-cols-2">
         <Card>
