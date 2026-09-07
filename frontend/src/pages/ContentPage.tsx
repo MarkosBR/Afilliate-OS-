@@ -64,7 +64,6 @@ export function ContentPage() {
         body: form.body || null,
         kind: form.kind,
         channel: form.channel || null,
-        status: form.status,
         source: form.source,
         generatedBy: form.source === "AI" ? form.generatedBy || null : null,
       };
@@ -83,6 +82,22 @@ export function ContentPage() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["contents"] });
       toast.push("Conteudo excluido.");
+    },
+  });
+
+  const approve = useMutation({
+    mutationFn: (id: string) => api.content.approve(id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["contents"] });
+      toast.push("Conteudo aprovado.");
+    },
+  });
+
+  const reject = useMutation({
+    mutationFn: (id: string) => api.content.reject(id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["contents"] });
+      toast.push("Conteudo voltou para rascunho.");
     },
   });
 
@@ -197,9 +212,31 @@ export function ContentPage() {
                   <Badge tone={item.source === "AI" ? "success" : "neutral"}>{item.source}</Badge>
                 </TD>
                 <TD>
-                  <Badge tone={item.status === "PUBLISHED" ? "success" : "neutral"}>{item.status}</Badge>
+                  <Badge
+                    tone={
+                      item.status === "APPROVED" || item.status === "SCHEDULED"
+                        ? "accent"
+                        : item.status === "FAILED"
+                          ? "danger"
+                          : item.status === "PUBLISHED"
+                            ? "success"
+                            : "neutral"
+                    }
+                  >
+                    {item.status}
+                  </Badge>
                 </TD>
                 <TD className="text-right">
+                  {item.status === "DRAFT" || item.status === "FAILED" ? (
+                    <Button variant="ghost" size="sm" onClick={() => approve.mutate(item.id)}>
+                      Aprovar
+                    </Button>
+                  ) : null}
+                  {item.status === "APPROVED" || item.status === "SCHEDULED" ? (
+                    <Button variant="ghost" size="sm" onClick={() => reject.mutate(item.id)}>
+                      Rascunho
+                    </Button>
+                  ) : null}
                   <Button variant="ghost" size="sm" onClick={() => openEdit(item)}>
                     Editar
                   </Button>
@@ -300,15 +337,7 @@ export function ContentPage() {
           <Input label="Titulo" required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
           <Textarea label="Corpo" value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} />
           <Input label="Canal" value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value })} />
-          <Select
-            label="Status"
-            value={form.status}
-            onChange={(e) => setForm({ ...form, status: e.target.value as ContentStatus })}
-          >
-            <option value="DRAFT">DRAFT</option>
-            <option value="PUBLISHED">PUBLISHED</option>
-            <option value="ARCHIVED">ARCHIVED</option>
-          </Select>
+          <p className="text-sm text-[var(--color-text-muted)]">Status atual: {editing?.status ?? "DRAFT"}</p>
           {save.error ? <p className="text-sm text-[var(--color-danger)]">{save.error.message}</p> : null}
           <Button type="submit" disabled={save.isPending}>
             Salvar

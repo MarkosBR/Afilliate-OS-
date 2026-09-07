@@ -10,6 +10,7 @@ import { LinksPage } from "../pages/LinksPage";
 import { LinkDetailPage } from "../pages/LinkDetailPage";
 import { CampaignsPage } from "../pages/CampaignsPage";
 import { ContentPage } from "../pages/ContentPage";
+import { CalendarPage } from "../pages/CalendarPage";
 import { AnalyticsPage } from "../pages/AnalyticsPage";
 import { AutomationPage } from "../pages/AutomationPage";
 import { ProfilePage } from "../pages/ProfilePage";
@@ -101,7 +102,7 @@ export const router = createBrowserRouter([
       { path: "storyforge", element: <PlaceholderPage title="StoryForge AI" module="Criacao" /> },
       { path: "viral-studio", element: <PlaceholderPage title="Viral Studio" module="Criacao" /> },
       { path: "creative-forge", element: <PlaceholderPage title="Creative Forge" module="Criacao" /> },
-      { path: "calendar", element: <PlaceholderPage title="Content Calendar" module="Distribuicao" /> },
+      { path: "calendar", element: <CalendarPage /> },
       { path: "social", element: <PlaceholderPage title="Social Media" module="Distribuicao" /> },
       { path: "crm", element: <PlaceholderPage title="CRM" module="Vendas" /> },
       { path: "sales-ai", element: <PlaceholderPage title="Sales AI" module="Vendas" /> },

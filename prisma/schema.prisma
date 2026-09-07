@@ -52,8 +52,36 @@ enum CampaignStatus {
 
 enum ContentStatus {
   DRAFT
+  APPROVED
+  SCHEDULED
   PUBLISHED
+  FAILED
   ARCHIVED
+}
+
+enum PublicationPlatform {
+  INSTAGRAM
+  TIKTOK
+  YOUTUBE
+  FACEBOOK
+  OTHER
+}
+
+enum PublicationStatus {
+  PENDING
+  SCHEDULED
+  READY
+  PUBLISHED
+  FAILED
+  CANCELLED
+}
+
+enum NotificationType {
+  CONTENT_APPROVED
+  CONTENT_REJECTED
+  CONTENT_SCHEDULED
+  PUBLICATION_FAILED
+  PUBLICATION_PUBLISHED
 }
 
 enum ContentKind {
@@ -90,6 +118,8 @@ model User {
   affiliateLinks AffiliateLink[]
   campaigns      Campaign[]
   contents       Content[]
+  publications   Publication[]
+  notifications  Notification[]
   analyticsEvents AnalyticsEvent[]
   adminLogs      AdminLog[]      @relation("AdminActor")
   targetedLogs   AdminLog[]      @relation("AdminTarget")
@@ -194,7 +224,8 @@ model Content {
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   product     Product?      @relation(fields: [productId], references: [id], onDelete: SetNull)
   campaign    Campaign?     @relation(fields: [campaignId], references: [id], onDelete: SetNull)
-  link        AffiliateLink? @relation(fields: [linkId], references: [id], onDelete: SetNull)
+  link          AffiliateLink? @relation(fields: [linkId], references: [id], onDelete: SetNull)
+  publications  Publication[]
 
   @@index([userId])
   @@index([productId])
@@ -204,6 +235,48 @@ model Content {
   @@index([status])
   @@index([createdAt])
   @@map("content")
+}
+
+model Publication {
+  id           String              @id @default(cuid())
+  userId       String
+  contentId    String
+  platform     PublicationPlatform
+  scheduledAt  DateTime
+  status       PublicationStatus   @default(SCHEDULED)
+  publishedAt  DateTime?
+  errorMessage String?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content      Content             @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([contentId])
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([platform])
+  @@index([userId, status, scheduledAt])
+  @@index([contentId, platform, status])
+  @@map("publications")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String?
+  metadata  Json?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@map("notifications")
 }
 
 model AnalyticsEvent {

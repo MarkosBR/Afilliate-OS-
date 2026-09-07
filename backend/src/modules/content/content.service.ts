@@ -2,11 +2,13 @@ import type { ContentKind, ContentSource, ContentStatus } from "@prisma/client";
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../middleware/errorHandler.js";
 import { serializeContent } from "../../lib/serializers.js";
+import { createNotification } from "../notifications/notifications.service.js";
 
 const include = {
   product: { select: { id: true, name: true, platform: true } },
   campaign: { select: { id: true, name: true, status: true } },
   link: { select: { id: true, name: true, slug: true } },
+  publications: { orderBy: { scheduledAt: "desc" as const } },
 } as const;
 
 async function assertOwnedRelations(
@@ -81,7 +83,7 @@ export async function createContent(
       body: input.body ?? null,
       kind: input.kind ?? "POST",
       channel: input.channel ?? null,
-      status: input.status ?? "DRAFT",
+      status: "DRAFT",
       source: input.source ?? "MANUAL",
       generatedBy: input.source === "AI" ? input.generatedBy ?? null : null,
     },
@@ -116,6 +118,9 @@ export async function updateContent(
   });
 
   const source = input.source ?? existing.source;
+  if (input.status && input.status !== existing.status) {
+    throw new AppError(400, "INVALID_STATUS", "Use approve, reject or schedule endpoints to change status.");
+  }
   const item = await prisma.content.update({
     where: { id },
     data: {
@@ -126,11 +131,59 @@ export async function updateContent(
       body: input.body === undefined ? existing.body : input.body,
       kind: input.kind ?? existing.kind,
       channel: input.channel === undefined ? existing.channel : input.channel,
-      status: input.status ?? existing.status,
       source,
       generatedBy: source === "AI" ? (input.generatedBy === undefined ? existing.generatedBy : input.generatedBy) : null,
     },
     include,
+  });
+  return serializeContent(item);
+}
+
+export async function approveContent(userId: string, id: string) {
+  const existing = await prisma.content.findFirst({ where: { id, userId }, include });
+  if (!existing) throw new AppError(404, "NOT_FOUND", "Content not found.");
+  if (existing.status !== "DRAFT" && existing.status !== "FAILED") {
+    throw new AppError(400, "INVALID_STATUS", "Only draft or failed content can be approved.");
+  }
+  const item = await prisma.content.update({
+    where: { id },
+    data: { status: "APPROVED" },
+    include,
+  });
+  await createNotification({
+    userId,
+    type: "CONTENT_APPROVED",
+    title: "Conteudo aprovado",
+    body: `${item.title} esta pronto para agendamento.`,
+    metadata: { contentId: item.id },
+  });
+  return serializeContent(item);
+}
+
+export async function rejectContent(userId: string, id: string) {
+  const existing = await prisma.content.findFirst({ where: { id, userId }, include });
+  if (!existing) throw new AppError(404, "NOT_FOUND", "Content not found.");
+  if (existing.status === "PUBLISHED") {
+    throw new AppError(400, "INVALID_STATUS", "Published content cannot return to draft.");
+  }
+  const active = existing.publications.filter((item) => ["PENDING", "SCHEDULED", "READY"].includes(item.status));
+  if (active.length) {
+    await prisma.publication.updateMany({
+      where: { id: { in: active.map((item) => item.id) } },
+      data: { status: "CANCELLED" },
+    });
+  }
+  const item = await prisma.content.update({
+    where: { id },
+    data: { status: "DRAFT" },
+    include,
+  });
+  await createNotification({
+    userId,
+    type: "CONTENT_REJECTED",
+    title: "Conteudo voltou para rascunho",
+    body: `${item.title} precisa de revisao.`,
+    metadata: { contentId: item.id },
   });
   return serializeContent(item);
 }

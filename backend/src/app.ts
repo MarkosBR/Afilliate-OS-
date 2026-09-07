@@ -17,6 +17,9 @@ import { adminRouter } from "./modules/admin/admin.routes.js";
 import { trackingRouter } from "./modules/tracking/tracking.routes.js";
 import { contentRouter } from "./modules/content/content.routes.js";
 import { aiRouter } from "./modules/ai/ai.routes.js";
+import { calendarRouter } from "./modules/calendar/calendar.routes.js";
+import { publicationsRouter } from "./modules/publications/publications.routes.js";
+import { notificationsRouter } from "./modules/notifications/notifications.routes.js";
 
 export function createApp() {
   const app = express();
@@ -54,10 +57,12 @@ export function createApp() {
   app.use("/go", trackingRouter);
   app.use("/api/content", contentRouter);
   app.use("/api/ai", aiRouter);
+  app.use("/api/calendar", calendarRouter);
+  app.use("/api/publications", publicationsRouter);
+  app.use("/api/notifications", notificationsRouter);
   app.use("/api/leads", createPlaceholderRouter("Leads"));
   app.use("/api/sales", createPlaceholderRouter("Sales"));
   app.use("/api/integrations", createPlaceholderRouter("Integrations"));
-  app.use("/api/notifications", createPlaceholderRouter("Notifications"));
 
   app.use(notFoundHandler);
   app.use(errorHandler);

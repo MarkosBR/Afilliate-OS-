@@ -5,10 +5,18 @@ export type ProductPlatform = "HOTMART" | "EDUZZ" | "KIWIFY" | "OTHER";
 export type ProductStatus = "ACTIVE" | "INACTIVE";
 export type LinkStatus = "ACTIVE" | "INACTIVE";
 export type CampaignStatus = "DRAFT" | "ACTIVE" | "PAUSED" | "COMPLETED";
-export type ContentStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
+export type ContentStatus = "DRAFT" | "APPROVED" | "SCHEDULED" | "PUBLISHED" | "FAILED" | "ARCHIVED";
 export type ContentKind = "POST" | "CAPTION" | "AD" | "PRODUCT_DESCRIPTION" | "SCRIPT";
 export type ContentSource = "MANUAL" | "AI";
 export type ContentTone = "professional" | "casual" | "persuasive" | "urgent" | "friendly";
+export type PublicationPlatform = "INSTAGRAM" | "TIKTOK" | "YOUTUBE" | "FACEBOOK" | "OTHER";
+export type PublicationStatus = "PENDING" | "SCHEDULED" | "READY" | "PUBLISHED" | "FAILED" | "CANCELLED";
+export type NotificationType =
+  | "CONTENT_APPROVED"
+  | "CONTENT_REJECTED"
+  | "CONTENT_SCHEDULED"
+  | "PUBLICATION_FAILED"
+  | "PUBLICATION_PUBLISHED";
 
 export type User = {
   id: string;
@@ -87,6 +95,36 @@ export type Content = {
   product?: Pick<Product, "id" | "name" | "platform"> | null;
   campaign?: { id: string; name: string; status: CampaignStatus } | null;
   link?: { id: string; name: string; slug: string } | null;
+  publications?: Publication[];
+};
+
+export type Publication = {
+  id: string;
+  userId: string;
+  contentId: string;
+  platform: PublicationPlatform;
+  scheduledAt: string;
+  status: PublicationStatus;
+  publishedAt: string | null;
+  errorMessage: string | null;
+  createdAt: string;
+  updatedAt: string;
+  content?: Pick<Content, "id" | "title" | "status" | "kind" | "linkId">;
+};
+
+export type CalendarEntry = Publication & {
+  content: Pick<Content, "id" | "title" | "status" | "kind" | "linkId">;
+};
+
+export type AppNotification = {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  body: string | null;
+  metadata: Record<string, unknown> | null;
+  readAt: string | null;
+  createdAt: string;
 };
 
 export type AiGenerateResult = {

@@ -3,10 +3,12 @@ import { sendSuccess } from "../../lib/http.js";
 import { routeId } from "../../lib/params.js";
 import { contentSchema, contentUpdateSchema } from "./content.schemas.js";
 import {
+  approveContent,
   createContent,
   deleteContent,
   getContent,
   listContents,
+  rejectContent,
   updateContent,
 } from "./content.service.js";
 
@@ -48,6 +50,22 @@ export async function deleteContentController(req: Request, res: Response, next:
   try {
     await deleteContent(req.user!.id, routeId(req));
     return sendSuccess(res, { ok: true });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function approveContentController(req: Request, res: Response, next: NextFunction) {
+  try {
+    return sendSuccess(res, await approveContent(req.user!.id, routeId(req)));
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function rejectContentController(req: Request, res: Response, next: NextFunction) {
+  try {
+    return sendSuccess(res, await rejectContent(req.user!.id, routeId(req)));
   } catch (error) {
     next(error);
   }

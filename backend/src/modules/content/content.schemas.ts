@@ -9,9 +9,9 @@ export const contentSchema = z.object({
   body: z.string().trim().max(8000).optional().nullable(),
   kind: contentKindSchema.optional().default("POST"),
   channel: z.string().trim().max(80).optional().nullable(),
-  status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).optional().default("DRAFT"),
+  status: z.enum(["DRAFT", "APPROVED", "SCHEDULED", "PUBLISHED", "FAILED", "ARCHIVED"]).optional(),
   source: z.enum(["MANUAL", "AI"]).optional().default("MANUAL"),
   generatedBy: z.string().trim().max(80).optional().nullable(),
 });
 
-export const contentUpdateSchema = contentSchema.partial();
+export const contentUpdateSchema = contentSchema.omit({ status: true }).partial();

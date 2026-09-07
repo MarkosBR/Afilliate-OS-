@@ -2,7 +2,9 @@ import type {
   AffiliateLink,
   Campaign,
   Content,
+  Notification,
   Product,
+  Publication,
   User,
 } from "@prisma/client";
 
@@ -89,11 +91,53 @@ export function serializeCampaign(
   };
 }
 
+export function serializePublication(
+  publication: Publication & {
+    content?: Pick<Content, "id" | "title" | "status" | "kind" | "linkId">;
+  },
+) {
+  return {
+    id: publication.id,
+    userId: publication.userId,
+    contentId: publication.contentId,
+    platform: publication.platform,
+    scheduledAt: publication.scheduledAt.toISOString(),
+    status: publication.status,
+    publishedAt: publication.publishedAt?.toISOString() ?? null,
+    errorMessage: publication.errorMessage,
+    createdAt: publication.createdAt.toISOString(),
+    updatedAt: publication.updatedAt.toISOString(),
+    content: publication.content
+      ? {
+          id: publication.content.id,
+          title: publication.content.title,
+          status: publication.content.status,
+          kind: publication.content.kind,
+          linkId: publication.content.linkId,
+        }
+      : undefined,
+  };
+}
+
+export function serializeNotification(notification: Notification) {
+  return {
+    id: notification.id,
+    userId: notification.userId,
+    type: notification.type,
+    title: notification.title,
+    body: notification.body,
+    metadata: (notification.metadata as Record<string, unknown> | null) ?? null,
+    readAt: notification.readAt?.toISOString() ?? null,
+    createdAt: notification.createdAt.toISOString(),
+  };
+}
+
 export function serializeContent(
   content: Content & {
     product?: Pick<Product, "id" | "name" | "platform"> | null;
     campaign?: Pick<Campaign, "id" | "name" | "status"> | null;
     link?: Pick<AffiliateLink, "id" | "name" | "slug"> | null;
+    publications?: Publication[];
   },
 ) {
   return {
@@ -120,6 +164,7 @@ export function serializeContent(
     link: content.link
       ? { id: content.link.id, name: content.link.name, slug: content.link.slug }
       : null,
+    publications: content.publications?.map((item) => serializePublication(item)),
   };
 }
 

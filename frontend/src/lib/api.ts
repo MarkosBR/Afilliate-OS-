@@ -10,10 +10,14 @@ import type {
   AnalyticsSummary,
   AuthPayload,
   Campaign,
+  AppNotification,
+  CalendarEntry,
   Content,
   ContentKind,
   ContentTone,
   DashboardOverview,
+  Publication,
+  PublicationPlatform,
   LinkStats,
   Paginated,
   Product,
@@ -152,6 +156,22 @@ export const api = {
     update: (id: string, body: Partial<Content>) =>
       request<Content>(`/api/content/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
     remove: (id: string) => request<{ ok: boolean }>(`/api/content/${id}`, { method: "DELETE" }),
+    approve: (id: string) => request<Content>(`/api/content/${id}/approve`, { method: "POST" }),
+    reject: (id: string) => request<Content>(`/api/content/${id}/reject`, { method: "POST" }),
+    schedule: (id: string, body: { platform: PublicationPlatform; scheduledAt: string }) =>
+      request<Publication>(`/api/content/${id}/schedule`, { method: "POST", body: JSON.stringify(body) }),
+  },
+  calendar: {
+    list: (params = "") => request<CalendarEntry[]>(`/api/calendar${params}`),
+  },
+  publications: {
+    list: () => request<Publication[]>("/api/publications"),
+    get: (id: string) => request<Publication>(`/api/publications/${id}`),
+    cancel: (id: string) => request<Publication>(`/api/publications/${id}/cancel`, { method: "POST" }),
+  },
+  notifications: {
+    list: () => request<AppNotification[]>("/api/notifications"),
+    markRead: (id: string) => request<AppNotification>(`/api/notifications/${id}/read`, { method: "PATCH" }),
   },
   ai: {
     status: () => request<AiStatus>("/api/ai/status"),
