@@ -6,6 +6,9 @@ export type ProductStatus = "ACTIVE" | "INACTIVE";
 export type LinkStatus = "ACTIVE" | "INACTIVE";
 export type CampaignStatus = "DRAFT" | "ACTIVE" | "PAUSED" | "COMPLETED";
 export type ContentStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
+export type ContentKind = "POST" | "CAPTION" | "AD" | "PRODUCT_DESCRIPTION" | "SCRIPT";
+export type ContentSource = "MANUAL" | "AI";
+export type ContentTone = "professional" | "casual" | "persuasive" | "urgent" | "friendly";
 
 export type User = {
   id: string;
@@ -64,6 +67,41 @@ export type Campaign = {
   createdAt: string;
   updatedAt: string;
   product?: Pick<Product, "id" | "name" | "platform">;
+};
+
+export type Content = {
+  id: string;
+  userId: string;
+  productId: string | null;
+  campaignId: string | null;
+  linkId: string | null;
+  title: string;
+  body: string | null;
+  kind: ContentKind;
+  channel: string | null;
+  status: ContentStatus;
+  source: ContentSource;
+  generatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+  product?: Pick<Product, "id" | "name" | "platform"> | null;
+  campaign?: { id: string; name: string; status: CampaignStatus } | null;
+  link?: { id: string; name: string; slug: string } | null;
+};
+
+export type AiGenerateResult = {
+  title: string;
+  body: string;
+  titles: string[];
+  description: string;
+  provider: string;
+  kind: ContentKind;
+  tone: string;
+};
+
+export type AiStatus = {
+  configured: boolean;
+  provider: string | null;
 };
 
 export type AnalyticsSummary = {

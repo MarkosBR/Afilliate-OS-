@@ -1,6 +1,7 @@
 import type {
   AffiliateLink,
   Campaign,
+  Content,
   Product,
   User,
 } from "@prisma/client";
@@ -85,6 +86,40 @@ export function serializeCampaign(
           platform: campaign.product.platform,
         }
       : undefined,
+  };
+}
+
+export function serializeContent(
+  content: Content & {
+    product?: Pick<Product, "id" | "name" | "platform"> | null;
+    campaign?: Pick<Campaign, "id" | "name" | "status"> | null;
+    link?: Pick<AffiliateLink, "id" | "name" | "slug"> | null;
+  },
+) {
+  return {
+    id: content.id,
+    userId: content.userId,
+    productId: content.productId,
+    campaignId: content.campaignId,
+    linkId: content.linkId,
+    title: content.title,
+    body: content.body,
+    kind: content.kind,
+    channel: content.channel,
+    status: content.status,
+    source: content.source,
+    generatedBy: content.generatedBy,
+    createdAt: content.createdAt.toISOString(),
+    updatedAt: content.updatedAt.toISOString(),
+    product: content.product
+      ? { id: content.product.id, name: content.product.name, platform: content.product.platform }
+      : null,
+    campaign: content.campaign
+      ? { id: content.campaign.id, name: content.campaign.name, status: content.campaign.status }
+      : null,
+    link: content.link
+      ? { id: content.link.id, name: content.link.name, slug: content.link.slug }
+      : null,
   };
 }
 

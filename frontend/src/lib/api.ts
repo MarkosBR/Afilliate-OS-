@@ -3,11 +3,16 @@ import type {
   AdminDashboard,
   AdminLog,
   AffiliateLink,
+  AiGenerateResult,
+  AiStatus,
   AnalyticsBreakdown,
   AnalyticsReport,
   AnalyticsSummary,
   AuthPayload,
   Campaign,
+  Content,
+  ContentKind,
+  ContentTone,
   DashboardOverview,
   LinkStats,
   Paginated,
@@ -138,6 +143,25 @@ export const api = {
     update: (id: string, body: Partial<Campaign>) =>
       request<Campaign>(`/api/campaigns/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
     remove: (id: string) => request<{ ok: boolean }>(`/api/campaigns/${id}`, { method: "DELETE" }),
+  },
+  content: {
+    list: () => request<Content[]>("/api/content"),
+    get: (id: string) => request<Content>(`/api/content/${id}`),
+    create: (body: Partial<Content> & { title: string }) =>
+      request<Content>("/api/content", { method: "POST", body: JSON.stringify(body) }),
+    update: (id: string, body: Partial<Content>) =>
+      request<Content>(`/api/content/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
+    remove: (id: string) => request<{ ok: boolean }>(`/api/content/${id}`, { method: "DELETE" }),
+  },
+  ai: {
+    status: () => request<AiStatus>("/api/ai/status"),
+    generate: (body: {
+      productId: string;
+      campaignId?: string | null;
+      kind: ContentKind;
+      tone?: ContentTone;
+      extraContext?: string | null;
+    }) => request<AiGenerateResult>("/api/ai/generate", { method: "POST", body: JSON.stringify(body) }),
   },
   analytics: {
     summary: () => request<AnalyticsSummary>("/api/analytics/summary"),

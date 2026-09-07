@@ -1,0 +1,54 @@
+import type { NextFunction, Request, Response } from "express";
+import { sendSuccess } from "../../lib/http.js";
+import { routeId } from "../../lib/params.js";
+import { contentSchema, contentUpdateSchema } from "./content.schemas.js";
+import {
+  createContent,
+  deleteContent,
+  getContent,
+  listContents,
+  updateContent,
+} from "./content.service.js";
+
+export async function listContentsController(req: Request, res: Response, next: NextFunction) {
+  try {
+    return sendSuccess(res, await listContents(req.user!.id));
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getContentController(req: Request, res: Response, next: NextFunction) {
+  try {
+    return sendSuccess(res, await getContent(req.user!.id, routeId(req)));
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function createContentController(req: Request, res: Response, next: NextFunction) {
+  try {
+    const input = contentSchema.parse(req.body);
+    return sendSuccess(res, await createContent(req.user!.id, input), 201);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function updateContentController(req: Request, res: Response, next: NextFunction) {
+  try {
+    const input = contentUpdateSchema.parse(req.body);
+    return sendSuccess(res, await updateContent(req.user!.id, routeId(req), input));
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function deleteContentController(req: Request, res: Response, next: NextFunction) {
+  try {
+    await deleteContent(req.user!.id, routeId(req));
+    return sendSuccess(res, { ok: true });
+  } catch (error) {
+    next(error);
+  }
+}

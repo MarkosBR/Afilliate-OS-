@@ -9,6 +9,7 @@ import { ProductsPage } from "../pages/ProductsPage";
 import { LinksPage } from "../pages/LinksPage";
 import { LinkDetailPage } from "../pages/LinkDetailPage";
 import { CampaignsPage } from "../pages/CampaignsPage";
+import { ContentPage } from "../pages/ContentPage";
 import { AnalyticsPage } from "../pages/AnalyticsPage";
 import { AutomationPage } from "../pages/AutomationPage";
 import { ProfilePage } from "../pages/ProfilePage";
@@ -50,7 +51,7 @@ export const router = createBrowserRouter([
       { path: "affiliates", element: <PlaceholderPage title="Afiliados" module="Afiliados" /> },
       { path: "links", element: <LinksPage /> },
       { path: "links/:id", element: <LinkDetailPage /> },
-      { path: "content", element: <PlaceholderPage title="Conteudo" module="Conteudo" /> },
+      { path: "content", element: <ContentPage /> },
       { path: "campaigns", element: <CampaignsPage /> },
       { path: "automation", element: <AutomationPage /> },
       { path: "analytics", element: <AnalyticsPage /> },
