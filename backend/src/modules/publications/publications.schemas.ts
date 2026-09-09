@@ -8,6 +8,7 @@ const dateTimeSchema = z.string().trim().min(1).refine((value) => !Number.isNaN(
 export const scheduleSchema = z.object({
   platform: publicationPlatformSchema,
   scheduledAt: dateTimeSchema,
+  connectedAccountId: z.string().min(1).optional().nullable(),
 });
 
 export const calendarQuerySchema = z

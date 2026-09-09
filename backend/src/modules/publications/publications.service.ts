@@ -3,6 +3,7 @@ import { prisma } from "../../lib/prisma.js";
 import { serializePublication } from "../../lib/serializers.js";
 import { AppError } from "../../middleware/errorHandler.js";
 import { createNotification } from "../notifications/notifications.service.js";
+import { assertOwnedConnectedAccount } from "../integrations/integrations.service.js";
 import { findDuePublicationsQuery } from "./platform.adapter.js";
 
 const ACTIVE_STATUSES: PublicationStatus[] = ["PENDING", "SCHEDULED", "READY"];
@@ -73,7 +74,7 @@ export async function listCalendar(
 export async function scheduleContent(
   userId: string,
   contentId: string,
-  input: { platform: PublicationPlatform; scheduledAt: string },
+  input: { platform: PublicationPlatform; scheduledAt: string; connectedAccountId?: string | null },
 ) {
   const content = await prisma.content.findFirst({ where: { id: contentId, userId } });
   if (!content) throw new AppError(404, "NOT_FOUND", "Content not found.");
@@ -88,6 +89,11 @@ export async function scheduleContent(
   }
 
   const scheduledAt = parseScheduledAt(input.scheduledAt);
+  let connectedAccountId: string | null = null;
+  if (input.connectedAccountId) {
+    const account = await assertOwnedConnectedAccount(userId, input.connectedAccountId, input.platform);
+    connectedAccountId = account.id;
+  }
   const duplicate = await prisma.publication.findFirst({
     where: {
       userId,
@@ -105,6 +111,7 @@ export async function scheduleContent(
       data: {
         userId,
         contentId,
+        connectedAccountId,
         platform: input.platform,
         scheduledAt,
         status: "SCHEDULED",

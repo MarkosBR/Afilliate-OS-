@@ -18,20 +18,24 @@ postgresql://affiliateos:affiliateos@localhost:5432/affiliateos?schema=public
 docker compose up -d postgres
 ```
 
-## Modelos (Fase 1)
+## Modelos
 
 - `users`
 - `products`
 - `affiliate_links`
 - `campaigns`
 - `content`
+- `publications`
+- `connected_accounts`
+- `notifications`
 - `analytics`
+- `admin_logs`
 
 Todos os registros de negocio pertencem a um `User`.
 
 ### User
 
-- id, name, email, passwordHash, avatar, plan, status, lastLogin, createdAt, updatedAt
+- id, name, email, passwordHash, avatar, plan, status, role, lastLogin, createdAt, updatedAt
 
 ### Product
 
@@ -39,15 +43,32 @@ Todos os registros de negocio pertencem a um `User`.
 
 ### AffiliateLink
 
-- nome, slug unico por usuario, url, productId, userId
+- nome, slug unico, url, productId, userId, campaignId opcional, contador de cliques
 
 ### Campaign
 
 - nome, descricao, orcamento, status (DRAFT, ACTIVE, PAUSED, COMPLETED), productId, userId
 
-### Content / Analytics
+### Content
 
-Estrutura preparada. Eventos de analytics so existem se forem gravados; a UI nao inventa valores.
+- titulo, corpo, kind, status (DRAFT, APPROVED, SCHEDULED, PUBLISHED, FAILED, ARCHIVED), source MANUAL/AI
+
+### Publication
+
+- contentId, platform, scheduledAt, status, publishedAt, errorMessage
+- `connectedAccountId` opcional (SetNull). Deve pertencer ao mesmo usuario e, quando informado, a plataforma deve ser compativel
+
+### ConnectedAccount (Fase 7)
+
+- unique (`userId`, `platform`)
+- platform: INSTAGRAM, FACEBOOK, TIKTOK, YOUTUBE, WHATSAPP, TELEGRAM
+- status: DISCONNECTED, CONNECTING, CONNECTED, EXPIRED, ERROR
+- `accessToken` / `refreshToken` cifrados (AES-256-GCM); nunca serializados na API
+- displayName, externalAccountId, scopes, tokenExpiresAt, metadata
+
+### Notification / Analytics / AdminLog
+
+Notificacoes internas de fluxo de conteudo. Eventos de analytics so existem se forem gravados. Logs administrativos sem secrets.
 
 ## Comandos
 

@@ -84,6 +84,23 @@ enum NotificationType {
   PUBLICATION_PUBLISHED
 }
 
+enum IntegrationPlatform {
+  INSTAGRAM
+  FACEBOOK
+  TIKTOK
+  YOUTUBE
+  WHATSAPP
+  TELEGRAM
+}
+
+enum ConnectionStatus {
+  DISCONNECTED
+  CONNECTING
+  CONNECTED
+  EXPIRED
+  ERROR
+}
+
 enum ContentKind {
   POST
   CAPTION
@@ -120,6 +137,7 @@ model User {
   contents       Content[]
   publications   Publication[]
   notifications  Notification[]
+  connectedAccounts ConnectedAccount[]
   analyticsEvents AnalyticsEvent[]
   adminLogs      AdminLog[]      @relation("AdminActor")
   targetedLogs   AdminLog[]      @relation("AdminTarget")
@@ -238,27 +256,55 @@ model Content {
 }
 
 model Publication {
-  id           String              @id @default(cuid())
-  userId       String
-  contentId    String
-  platform     PublicationPlatform
-  scheduledAt  DateTime
-  status       PublicationStatus   @default(SCHEDULED)
-  publishedAt  DateTime?
-  errorMessage String?
-  createdAt    DateTime            @default(now())
-  updatedAt    DateTime            @updatedAt
-  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  content      Content             @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  id                 String              @id @default(cuid())
+  userId             String
+  contentId          String
+  connectedAccountId String?
+  platform           PublicationPlatform
+  scheduledAt        DateTime
+  status             PublicationStatus   @default(SCHEDULED)
+  publishedAt        DateTime?
+  errorMessage       String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content            Content             @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  connectedAccount   ConnectedAccount?   @relation(fields: [connectedAccountId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([contentId])
+  @@index([connectedAccountId])
   @@index([status])
   @@index([scheduledAt])
   @@index([platform])
   @@index([userId, status, scheduledAt])
   @@index([contentId, platform, status])
   @@map("publications")
+}
+
+model ConnectedAccount {
+  id                String               @id @default(cuid())
+  userId            String
+  platform          IntegrationPlatform
+  externalAccountId String?
+  displayName       String?
+  status            ConnectionStatus     @default(DISCONNECTED)
+  scopes            String[]             @default([])
+  accessToken       String?
+  refreshToken      String?
+  tokenExpiresAt    DateTime?
+  metadata          Json?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  user              User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  publications      Publication[]
+
+  @@unique([userId, platform])
+  @@index([userId])
+  @@index([platform])
+  @@index([status])
+  @@index([userId, status])
+  @@map("connected_accounts")
 }
 
 model Notification {

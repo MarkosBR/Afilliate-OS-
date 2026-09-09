@@ -14,6 +14,7 @@ const envSchema = z.object({
   AUTH_SECRET: z.string().min(16),
   AI_PROVIDER: z.string().optional().default(""),
   AI_API_KEY: z.string().optional().default(""),
+  TOKEN_ENCRYPTION_KEY: z.string().optional().default(""),
   FRONTEND_URL: z.string().url().default("http://localhost:5173"),
   BACKEND_URL: z.string().url().default("http://localhost:3001"),
 });

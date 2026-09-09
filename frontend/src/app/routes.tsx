@@ -14,6 +14,7 @@ import { CalendarPage } from "../pages/CalendarPage";
 import { AnalyticsPage } from "../pages/AnalyticsPage";
 import { AutomationPage } from "../pages/AutomationPage";
 import { ProfilePage } from "../pages/ProfilePage";
+import { IntegrationsPage } from "../pages/IntegrationsPage";
 import { AdminDashboardPage } from "../pages/admin/AdminDashboardPage";
 import { AdminUsersPage } from "../pages/admin/AdminUsersPage";
 import { AdminProductsPage } from "../pages/admin/AdminProductsPage";
@@ -115,7 +116,7 @@ export const router = createBrowserRouter([
       { path: "academy", element: <PlaceholderPage title="Academy AI" module="Inteligencia" /> },
       { path: "command", element: <PlaceholderPage title="Command Center" module="Sistema" /> },
       { path: "alerts", element: <PlaceholderPage title="Alert Center" module="Sistema" /> },
-      { path: "integrations", element: <PlaceholderPage title="Integrations" module="Sistema" /> },
+      { path: "integrations", element: <IntegrationsPage /> },
     ],
   },
 ]);

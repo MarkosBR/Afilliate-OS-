@@ -1,12 +1,12 @@
 # Architecture
 
-AffiliateOS e um SaaS para afiliados. A Fase 00 entrega apenas a foundation.
+AffiliateOS e um SaaS para afiliados. A Fase 7 entrega a infraestrutura generica de integracoes sociais sobre as Fases 0-6.
 
 ## Principio
 
 Foundation primeiro. Funcionalidade depois.
 
-Nao ha produtos, campanhas, IA, CRM, analytics ou integracoes implementados nesta fase.
+Nenhuma API real de Instagram, Facebook, TikTok, YouTube, WhatsApp ou Telegram e chamada nesta fase. Tokens nunca saem do backend.
 
 ## Visao geral
 
@@ -36,13 +36,13 @@ Browser
 - Reverse proxy `/api` -> `http://localhost:3001`
 - `server.allowedHosts` inclui `.monkeycode-ai.live`
 
-O shell possui sidebar, header e area principal. Paginas sem implementacao usam `EmptyState`.
+O shell possui sidebar, header e area principal. Paginas sem implementacao usam `EmptyState`. `/integrations` lista plataformas com status, conectar e desconectar, sem exibir tokens.
 
 ## Backend
 
 Express modular, organizado por dominio.
 
-Implementado na Fase 1:
+Implementado:
 
 - `/api/health`
 - `/api/auth`
@@ -51,17 +51,40 @@ Implementado na Fase 1:
 - `/api/links`
 - `/api/campaigns`
 - `/api/analytics`
+- `/api/admin`
+- `/api/content`
+- `/api/ai`
+- `/api/calendar`
+- `/api/publications`
+- `/api/notifications`
+- `/api/integrations`
+- `GET /go/:slug`
 
 Ainda placeholder (`501`):
 
-- `/api/content`
 - `/api/leads`
 - `/api/sales`
-- `/api/ai`
-- `/api/integrations`
-- `/api/notifications`
 
-## Seguranca (preparacao)
+## Integracoes (Fase 7)
+
+- Modelo `ConnectedAccount` (um por `userId+platform`)
+- Tokens cifrados em AES-256-GCM (`TOKEN_ENCRYPTION_KEY`, fallback `AUTH_SECRET`)
+- Serializer nunca inclui `accessToken` / `refreshToken`
+- `OAuthProvider` generico: sem OAuth real, responde `OAUTH_NOT_CONFIGURED`
+- `PlatformAdapter` + registry: `validateConnection`, `publish`, `getAccountInfo`, `disconnect`
+- Plataformas nao implementadas: `PLATFORM_NOT_IMPLEMENTED`
+- `Publication.connectedAccountId` opcional, com ownership e compatibilidade de plataforma
+- `publication.executor` processa linhas `SCHEDULED` vencidas sem envio externo
+
+### Como adicionar uma plataforma
+
+1. Incluir o valor em `IntegrationPlatform` (Prisma + shared)
+2. Registrar um `PlatformAdapter` concreto em `platform.adapter.ts`
+3. Implementar `OAuthProvider` em `oauth.provider.ts` quando houver credenciais reais
+4. Persistir tokens apenas via `encryptSecret` / `storeEncryptedTokens`
+5. Nunca devolver tokens em serializers, logs ou frontend
+
+## Seguranca
 
 - Helmet
 - CORS restrito a `FRONTEND_URL`
@@ -70,6 +93,7 @@ Ainda placeholder (`501`):
 - Erros genericos em producao
 - Secrets apenas em environment variables
 - Senhas nunca em texto puro (`passwordHash` no modelo User)
+- Tokens de integracao apenas no backend, cifrados em repouso
 
 ## Autenticacao
 

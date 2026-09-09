@@ -17,6 +17,8 @@ export type NotificationType =
   | "CONTENT_SCHEDULED"
   | "PUBLICATION_FAILED"
   | "PUBLICATION_PUBLISHED";
+export type IntegrationPlatform = "INSTAGRAM" | "FACEBOOK" | "TIKTOK" | "YOUTUBE" | "WHATSAPP" | "TELEGRAM";
+export type ConnectionStatus = "DISCONNECTED" | "CONNECTING" | "CONNECTED" | "EXPIRED" | "ERROR";
 
 export type User = {
   id: string;
@@ -98,10 +100,24 @@ export type Content = {
   publications?: Publication[];
 };
 
+export type ConnectedAccount = {
+  id: string;
+  userId: string;
+  platform: IntegrationPlatform;
+  externalAccountId: string | null;
+  displayName: string | null;
+  status: ConnectionStatus;
+  scopes: string[];
+  tokenExpiresAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type Publication = {
   id: string;
   userId: string;
   contentId: string;
+  connectedAccountId: string | null;
   platform: PublicationPlatform;
   scheduledAt: string;
   status: PublicationStatus;

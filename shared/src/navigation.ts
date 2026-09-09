@@ -25,6 +25,7 @@ export const NAVIGATION: NavSection[] = [
       { id: "calendar", label: "Calendario", path: "/calendar", implemented: true },
       { id: "analytics", label: "Analytics", path: "/analytics", implemented: true },
       { id: "automation", label: "Automacao", path: "/automation", implemented: true },
+      { id: "integrations", label: "Integracoes", path: "/integrations", implemented: true },
       { id: "settings", label: "Configuracoes", path: "/settings/profile", implemented: true },
     ],
   },

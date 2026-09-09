@@ -24,3 +24,11 @@ export const AUTH_TOKEN_STORAGE_KEY = "affiliateos_token";
 
 export const PLANS = ["FREE", "STARTER", "PRO", "ENTERPRISE"] as const;
 export const USER_STATUSES = ["ACTIVE", "INACTIVE", "SUSPENDED", "PENDING"] as const;
+export const INTEGRATION_PLATFORMS = [
+  "INSTAGRAM",
+  "FACEBOOK",
+  "TIKTOK",
+  "YOUTUBE",
+  "WHATSAPP",
+  "TELEGRAM",
+] as const;

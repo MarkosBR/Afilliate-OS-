@@ -2,7 +2,7 @@
 
 AffiliateOS — Seu sistema operacional para afiliados.
 
-Fase 2: dashboard operacional, roles USER/ADMIN e area `/admin` sobre a Fase 1.
+Fase 7: infraestrutura de integracoes sociais sobre as Fases 0-6. Sem OAuth real e sem publicacao externa.
 
 ## Stack
 
@@ -36,6 +36,7 @@ DATABASE_URL=postgresql://affiliateos:affiliateos@localhost:5432/affiliateos?sch
 AUTH_SECRET=replace-this-auth-secret-min-32-chars
 AI_PROVIDER=
 AI_API_KEY=
+TOKEN_ENCRYPTION_KEY=
 FRONTEND_URL=http://localhost:5173
 BACKEND_URL=http://localhost:3001
 PORT=3001
@@ -109,17 +110,17 @@ docs/       arquitetura e roadmap
 scripts/    utilitarios locais
 ```
 
-## Funcionalidades da Fase 2
+## Funcionalidades da Fase 7
 
-- Identidade visual operacional
-- Dashboard com periodo, grafico e zeros reais
-- Roles USER e ADMIN
-- APIs `/api/admin/*` com `requireAdmin`
-- UI `/admin` (dashboard, usuarios, produtos, campanhas, logs)
-- Logs administrativos sem secrets
+- `ConnectedAccount` por usuario e plataforma
+- Tokens cifrados no backend (`TOKEN_ENCRYPTION_KEY`)
+- `/api/integrations` list/get/connect/disconnect/status
+- Stubs OAuth/adapter (`OAUTH_NOT_CONFIGURED`, `PLATFORM_NOT_IMPLEMENTED`)
+- UI `/integrations` sem exibir tokens
+- Agendamento pode referenciar conta propria
 
-A Fase 1 permanece: auth, perfil, CRUD, isolamento e analytics.
+As Fases 0-6 permanecem: auth, CRUD, admin, tracking, analytics, content/IA e calendario.
 
 ## Proximas fases
 
-Auth social, tracking real de cliques, CRM, IA, integracoes e automacoes reais. Ver `docs/ROADMAP.md`, `PHASE-1.md` e `PHASE-2.md`.
+OAuth real por plataforma e publicacao externa. Ver `docs/ROADMAP.md`.

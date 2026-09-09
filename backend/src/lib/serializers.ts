@@ -1,6 +1,7 @@
 import type {
   AffiliateLink,
   Campaign,
+  ConnectedAccount,
   Content,
   Notification,
   Product,
@@ -91,6 +92,21 @@ export function serializeCampaign(
   };
 }
 
+export function serializeConnectedAccount(account: ConnectedAccount) {
+  return {
+    id: account.id,
+    userId: account.userId,
+    platform: account.platform,
+    externalAccountId: account.externalAccountId,
+    displayName: account.displayName,
+    status: account.status,
+    scopes: account.scopes,
+    tokenExpiresAt: account.tokenExpiresAt?.toISOString() ?? null,
+    createdAt: account.createdAt.toISOString(),
+    updatedAt: account.updatedAt.toISOString(),
+  };
+}
+
 export function serializePublication(
   publication: Publication & {
     content?: Pick<Content, "id" | "title" | "status" | "kind" | "linkId">;
@@ -100,6 +116,7 @@ export function serializePublication(
     id: publication.id,
     userId: publication.userId,
     contentId: publication.contentId,
+    connectedAccountId: publication.connectedAccountId,
     platform: publication.platform,
     scheduledAt: publication.scheduledAt.toISOString(),
     status: publication.status,

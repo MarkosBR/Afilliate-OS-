@@ -12,10 +12,12 @@ import type {
   Campaign,
   AppNotification,
   CalendarEntry,
+  ConnectedAccount,
   Content,
   ContentKind,
   ContentTone,
   DashboardOverview,
+  IntegrationPlatform,
   Publication,
   PublicationPlatform,
   LinkStats,
@@ -158,8 +160,10 @@ export const api = {
     remove: (id: string) => request<{ ok: boolean }>(`/api/content/${id}`, { method: "DELETE" }),
     approve: (id: string) => request<Content>(`/api/content/${id}/approve`, { method: "POST" }),
     reject: (id: string) => request<Content>(`/api/content/${id}/reject`, { method: "POST" }),
-    schedule: (id: string, body: { platform: PublicationPlatform; scheduledAt: string }) =>
-      request<Publication>(`/api/content/${id}/schedule`, { method: "POST", body: JSON.stringify(body) }),
+    schedule: (
+      id: string,
+      body: { platform: PublicationPlatform; scheduledAt: string; connectedAccountId?: string | null },
+    ) => request<Publication>(`/api/content/${id}/schedule`, { method: "POST", body: JSON.stringify(body) }),
   },
   calendar: {
     list: (params = "") => request<CalendarEntry[]>(`/api/calendar${params}`),
@@ -172,6 +176,17 @@ export const api = {
   notifications: {
     list: () => request<AppNotification[]>("/api/notifications"),
     markRead: (id: string) => request<AppNotification>(`/api/notifications/${id}/read`, { method: "PATCH" }),
+  },
+  integrations: {
+    list: () => request<ConnectedAccount[]>("/api/integrations"),
+    get: (id: string) => request<ConnectedAccount>(`/api/integrations/${id}`),
+    status: (id: string) =>
+      request<Pick<ConnectedAccount, "id" | "platform" | "status" | "displayName" | "tokenExpiresAt">>(
+        `/api/integrations/${id}/status`,
+      ),
+    connect: (platform: IntegrationPlatform) =>
+      request<ConnectedAccount>(`/api/integrations/${platform}/connect`, { method: "POST" }),
+    disconnect: (id: string) => request<ConnectedAccount>(`/api/integrations/${id}/disconnect`, { method: "POST" }),
   },
   ai: {
     status: () => request<AiStatus>("/api/ai/status"),
