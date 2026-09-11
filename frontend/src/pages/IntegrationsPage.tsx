@@ -28,14 +28,31 @@ function accountFor(items: ConnectedAccount[] | undefined, platform: Integration
   return items?.find((item) => item.platform === platform) ?? null;
 }
 
+function queryError() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("error");
+}
+
 export function IntegrationsPage() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const oauthError = queryError();
   const integrations = useQuery({ queryKey: ["integrations"], queryFn: api.integrations.list });
 
   const connect = useMutation({
-    mutationFn: (platform: IntegrationPlatform) => api.integrations.connect(platform),
-    onSuccess: async () => {
+    mutationFn: async (platform: IntegrationPlatform) => {
+      if (platform === "YOUTUBE") {
+        const result = await api.integrations.connect("YOUTUBE");
+        if (result && "authorizationUrl" in result && result.authorizationUrl) {
+          window.location.assign(result.authorizationUrl);
+          return result;
+        }
+        throw new ApiError(501, "OAUTH_NOT_CONFIGURED", "YouTube OAuth is not configured.");
+      }
+      return api.integrations.connect(platform);
+    },
+    onSuccess: async (_data, platform) => {
+      if (platform === "YOUTUBE") return;
       await queryClient.invalidateQueries({ queryKey: ["integrations"] });
     },
     onError: (error) => {
@@ -72,43 +89,59 @@ export function IntegrationsPage() {
       <div>
         <h2 className="text-xl font-semibold">Integracoes</h2>
         <p className="text-sm text-[var(--color-text-muted)]">
-          Infraestrutura de contas conectadas. Nenhuma API social real e chamada nesta fase.
+          YouTube usa OAuth Google real. As demais plataformas permanecem em breve.
         </p>
+        {oauthError ? (
+          <p className="mt-2 text-sm text-[var(--color-danger)]">Falha OAuth: {oauthError}</p>
+        ) : null}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {INTEGRATION_PLATFORMS.map((platform) => {
           const account = accountFor(integrations.data, platform);
           const status = account?.status ?? "DISCONNECTED";
+          const isYouTube = platform === "YOUTUBE";
           return (
             <Card key={platform}>
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <CardTitle>{labels[platform]}</CardTitle>
                   <CardDescription>
-                    {account?.displayName || "Nenhuma conta conectada."}
+                    {isYouTube
+                      ? account?.displayName || "Nenhum canal conectado."
+                      : "Em breve. Esta plataforma ainda nao foi implementada."}
                   </CardDescription>
                 </div>
-                <Badge tone={statusTone(status)}>{status}</Badge>
+                <Badge tone={isYouTube ? statusTone(status) : "neutral"}>{isYouTube ? status : "EM BREVE"}</Badge>
               </div>
               <div className="mt-4 flex gap-2">
-                <Button
-                  size="sm"
-                  onClick={() => connect.mutate(platform)}
-                  disabled={connect.isPending || disconnect.isPending}
-                >
-                  Conectar
-                </Button>
-                {account ? (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => disconnect.mutate(account.id)}
-                    disabled={connect.isPending || disconnect.isPending}
-                  >
-                    Desconectar
+                {isYouTube ? (
+                  <>
+                    {status !== "CONNECTED" ? (
+                      <Button
+                        size="sm"
+                        onClick={() => connect.mutate("YOUTUBE")}
+                        disabled={connect.isPending || disconnect.isPending}
+                      >
+                        {status === "EXPIRED" || status === "ERROR" ? "Reconectar YouTube" : "Conectar YouTube"}
+                      </Button>
+                    ) : null}
+                    {account ? (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => disconnect.mutate(account.id)}
+                        disabled={connect.isPending || disconnect.isPending}
+                      >
+                        Desconectar
+                      </Button>
+                    ) : null}
+                  </>
+                ) : (
+                  <Button size="sm" disabled>
+                    Em breve
                   </Button>
-                ) : null}
+                )}
               </div>
             </Card>
           );

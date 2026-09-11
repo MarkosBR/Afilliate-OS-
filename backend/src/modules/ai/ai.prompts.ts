@@ -6,6 +6,7 @@ const KIND_INSTRUCTIONS: Record<ContentKind, string> = {
   AD: "Write a paid ad copy with a strong hook, 2-3 benefit bullets, and a direct call to action. Keep it under 120 words.",
   PRODUCT_DESCRIPTION: "Write a product description highlighting benefits, who it is for, and a closing call to action. Keep it 120-220 words.",
   SCRIPT: "Write a short video or reel script (30-60 seconds) with HOOK, BODY, and CTA sections.",
+  VIDEO: "Write a YouTube video title, description, and tags-oriented summary. Keep the description under 200 words with a call to action.",
 };
 
 export function buildContentPrompt(input: GenerateContentInput): string {

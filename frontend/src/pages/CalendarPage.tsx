@@ -53,6 +53,7 @@ export function CalendarPage() {
   const [selected, setSelected] = useState<Content | null>(null);
   const [scheduleAt, setScheduleAt] = useState(defaultScheduleAt);
   const [schedulePlatform, setSchedulePlatform] = useState<PublicationPlatform>("INSTAGRAM");
+  const [connectedAccountId, setConnectedAccountId] = useState("");
 
   const params = useMemo(() => {
     const search = new URLSearchParams();
@@ -69,6 +70,8 @@ export function CalendarPage() {
     queryFn: () => api.calendar.list(params),
   });
   const contents = useQuery({ queryKey: ["contents"], queryFn: api.content.list });
+  const integrations = useQuery({ queryKey: ["integrations"], queryFn: api.integrations.list });
+  const youtubeAccounts = integrations.data?.filter((item) => item.platform === "YOUTUBE" && item.status === "CONNECTED") ?? [];
 
   const approve = useMutation({
     mutationFn: (id: string) => api.content.approve(id),
@@ -85,6 +88,7 @@ export function CalendarPage() {
       return api.content.schedule(selected.id, {
         platform: schedulePlatform,
         scheduledAt: new Date(scheduleAt).toISOString(),
+        connectedAccountId: schedulePlatform === "YOUTUBE" ? connectedAccountId || null : null,
       });
     },
     onSuccess: async () => {
@@ -104,10 +108,23 @@ export function CalendarPage() {
     },
   });
 
+  const publishNow = useMutation({
+    mutationFn: (id: string) => api.publications.publish(id),
+    onSuccess: async (item) => {
+      await queryClient.invalidateQueries({ queryKey: ["calendar"] });
+      await queryClient.invalidateQueries({ queryKey: ["contents"] });
+      toast.push(item.status === "PUBLISHED" ? "YouTube confirmou a publicacao." : `Status: ${item.status}`);
+    },
+    onError: (error) => {
+      toast.push(error instanceof Error ? error.message : "Falha ao publicar.");
+    },
+  });
+
   function openSchedule(item: Content) {
     setSelected(item);
     setScheduleAt(defaultScheduleAt());
     setSchedulePlatform("INSTAGRAM");
+    setConnectedAccountId(youtubeAccounts[0]?.id ?? "");
     setOpen(true);
   }
 
@@ -127,7 +144,7 @@ export function CalendarPage() {
         <div>
           <h2 className="text-xl font-semibold">Calendario</h2>
           <p className="text-sm text-[var(--color-text-muted)]">
-            Aprovar, agendar e cancelar pecas. Nenhuma publicacao externa e enviada nesta fase.
+            Aprovar, agendar e publicar no YouTube. As demais plataformas continuam sem envio externo.
           </p>
         </div>
         <Button onClick={() => schedulable[0] && openSchedule(schedulable[0])} disabled={!schedulable.length}>
@@ -168,6 +185,7 @@ export function CalendarPage() {
               <TH>Conteudo</TH>
               <TH>Plataforma</TH>
               <TH>Status</TH>
+              <TH>Externo</TH>
               <TH></TH>
             </TR>
           </THead>
@@ -178,15 +196,23 @@ export function CalendarPage() {
                 <TD>{item.content?.title ?? item.contentId}</TD>
                 <TD>{item.platform}</TD>
                 <TD>
-                  <Badge tone={item.status === "FAILED" ? "danger" : item.status === "CANCELLED" ? "neutral" : "accent"}>
+                  <Badge tone={item.status === "FAILED" ? "danger" : item.status === "CANCELLED" ? "neutral" : item.status === "PUBLISHED" ? "success" : "accent"}>
                     {item.status}
                   </Badge>
                 </TD>
+                <TD>{item.externalId ?? "-"}</TD>
                 <TD className="text-right">
                   {item.status === "SCHEDULED" || item.status === "PENDING" || item.status === "READY" ? (
-                    <Button variant="ghost" size="sm" onClick={() => cancel.mutate(item.id)}>
-                      Cancelar
-                    </Button>
+                    <>
+                      {item.platform === "YOUTUBE" ? (
+                        <Button variant="ghost" size="sm" onClick={() => publishNow.mutate(item.id)} disabled={publishNow.isPending}>
+                          Publicar YouTube
+                        </Button>
+                      ) : null}
+                      <Button variant="ghost" size="sm" onClick={() => cancel.mutate(item.id)}>
+                        Cancelar
+                      </Button>
+                    </>
                   ) : null}
                 </TD>
               </TR>
@@ -225,6 +251,19 @@ export function CalendarPage() {
               </option>
             ))}
           </Select>
+          {schedulePlatform === "YOUTUBE" ? (
+            <Select label="Conta YouTube" value={connectedAccountId} onChange={(e) => setConnectedAccountId(e.target.value)}>
+              <option value="">Selecione o canal</option>
+              {youtubeAccounts.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.displayName || item.externalAccountId || item.id}
+                </option>
+              ))}
+            </Select>
+          ) : null}
+          {schedulePlatform === "YOUTUBE" && selected && !selected.hasVideo ? (
+            <p className="text-sm text-[var(--color-danger)]">Este conteudo precisa de um arquivo de video.</p>
+          ) : null}
           <Input
             label="Data e hora"
             type="datetime-local"

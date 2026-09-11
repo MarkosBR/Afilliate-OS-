@@ -4,6 +4,7 @@ import { routeId } from "../../lib/params.js";
 import { contentSchema, contentUpdateSchema } from "./content.schemas.js";
 import {
   approveContent,
+  attachContentVideo,
   createContent,
   deleteContent,
   getContent,
@@ -11,6 +12,7 @@ import {
   rejectContent,
   updateContent,
 } from "./content.service.js";
+import { readMultipartVideo } from "../../lib/multipart.js";
 
 export async function listContentsController(req: Request, res: Response, next: NextFunction) {
   try {
@@ -66,6 +68,15 @@ export async function approveContentController(req: Request, res: Response, next
 export async function rejectContentController(req: Request, res: Response, next: NextFunction) {
   try {
     return sendSuccess(res, await rejectContent(req.user!.id, routeId(req)));
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function uploadContentVideoController(req: Request, res: Response, next: NextFunction) {
+  try {
+    const file = await readMultipartVideo(req);
+    return sendSuccess(res, await attachContentVideo(req.user!.id, routeId(req), file));
   } catch (error) {
     next(error);
   }

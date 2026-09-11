@@ -1,4 +1,4 @@
-export type ContentKind = "POST" | "CAPTION" | "AD" | "PRODUCT_DESCRIPTION" | "SCRIPT";
+export type ContentKind = "POST" | "CAPTION" | "AD" | "PRODUCT_DESCRIPTION" | "SCRIPT" | "VIDEO";
 export type ContentTone = "professional" | "casual" | "persuasive" | "urgent" | "friendly";
 
 export type GenerateContentInput = {

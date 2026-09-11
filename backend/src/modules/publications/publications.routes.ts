@@ -4,6 +4,7 @@ import {
   cancelPublicationController,
   getPublicationController,
   listPublicationsController,
+  publishNowController,
 } from "./publications.controller.js";
 
 export const publicationsRouter = Router();
@@ -11,4 +12,5 @@ export const publicationsRouter = Router();
 publicationsRouter.use(requireAuth);
 publicationsRouter.get("/", listPublicationsController);
 publicationsRouter.get("/:id", getPublicationController);
+publicationsRouter.post("/:id/publish", publishNowController);
 publicationsRouter.post("/:id/cancel", cancelPublicationController);

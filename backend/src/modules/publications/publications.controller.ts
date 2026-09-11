@@ -9,6 +9,9 @@ import {
   listPublications,
   scheduleContent,
 } from "./publications.service.js";
+import { executePublication } from "./publication.executor.js";
+import { serializePublication } from "../../lib/serializers.js";
+import { prisma } from "../../lib/prisma.js";
 
 export async function listPublicationsController(req: Request, res: Response, next: NextFunction) {
   try {
@@ -38,6 +41,19 @@ export async function scheduleContentController(req: Request, res: Response, nex
 export async function cancelPublicationController(req: Request, res: Response, next: NextFunction) {
   try {
     return sendSuccess(res, await cancelPublication(req.user!.id, routeId(req)));
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function publishNowController(req: Request, res: Response, next: NextFunction) {
+  try {
+    const result = await executePublication(routeId(req), req.user!.id);
+    const item = await prisma.publication.findFirst({
+      where: { id: result.id, userId: req.user!.id },
+      include: { content: { select: { id: true, title: true, status: true, kind: true, linkId: true } } },
+    });
+    return sendSuccess(res, item ? serializePublication(item) : result);
   } catch (error) {
     next(error);
   }

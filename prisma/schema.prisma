@@ -107,6 +107,7 @@ enum ContentKind {
   AD
   PRODUCT_DESCRIPTION
   SCRIPT
+  VIDEO
 }
 
 enum ContentSource {
@@ -138,6 +139,7 @@ model User {
   publications   Publication[]
   notifications  Notification[]
   connectedAccounts ConnectedAccount[]
+  oauthStates    OAuthState[]
   analyticsEvents AnalyticsEvent[]
   adminLogs      AdminLog[]      @relation("AdminActor")
   targetedLogs   AdminLog[]      @relation("AdminTarget")
@@ -225,20 +227,23 @@ model Campaign {
 }
 
 model Content {
-  id          String        @id @default(cuid())
-  userId      String
-  productId   String?
-  campaignId  String?
-  linkId      String?
-  title       String
-  body        String?
-  kind        ContentKind   @default(POST)
-  channel     String?
-  status      ContentStatus @default(DRAFT)
-  source      ContentSource @default(MANUAL)
-  generatedBy String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id            String        @id @default(cuid())
+  userId        String
+  productId     String?
+  campaignId    String?
+  linkId        String?
+  title         String
+  body          String?
+  kind          ContentKind   @default(POST)
+  channel       String?
+  tags          String?
+  videoPath     String?
+  videoFileName String?
+  status        ContentStatus @default(DRAFT)
+  source        ContentSource @default(MANUAL)
+  generatedBy   String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   product     Product?      @relation(fields: [productId], references: [id], onDelete: SetNull)
   campaign    Campaign?     @relation(fields: [campaignId], references: [id], onDelete: SetNull)
@@ -265,6 +270,7 @@ model Publication {
   status             PublicationStatus   @default(SCHEDULED)
   publishedAt        DateTime?
   errorMessage       String?
+  externalId         String?
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -305,6 +311,22 @@ model ConnectedAccount {
   @@index([status])
   @@index([userId, status])
   @@map("connected_accounts")
+}
+
+model OAuthState {
+  id        String              @id @default(cuid())
+  userId    String
+  platform  IntegrationPlatform
+  state     String              @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime            @default(now())
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([platform])
+  @@map("oauth_states")
 }
 
 model Notification {

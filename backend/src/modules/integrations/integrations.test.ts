@@ -209,13 +209,14 @@ describe("phase 7 integrations", { concurrency: false }, () => {
 
   it("keeps adapter registry unimplemented and executor without real send", async () => {
     assert.throws(() => getPlatformAdapter("OTHER"), /Invalid integration platform/);
-    const adapter = getPlatformAdapter("YOUTUBE");
+    const adapter = getPlatformAdapter("INSTAGRAM");
     await assert.rejects(() => adapter.publish({
       publicationId: "x",
       contentId: "y",
-      platform: "YOUTUBE",
+      platform: "INSTAGRAM",
       scheduledAt: new Date(),
     }));
+    assert.equal(getPlatformAdapter("YOUTUBE").platform, "YOUTUBE");
 
     const serialized = serializeConnectedAccount({
       id: "acc",

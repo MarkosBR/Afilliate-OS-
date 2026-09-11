@@ -8,6 +8,7 @@ import {
   listContentsController,
   rejectContentController,
   updateContentController,
+  uploadContentVideoController,
 } from "./content.controller.js";
 import { listPublicationsController, scheduleContentController } from "../publications/publications.controller.js";
 
@@ -20,6 +21,7 @@ contentRouter.get("/scheduled", listPublicationsController);
 contentRouter.post("/:id/approve", approveContentController);
 contentRouter.post("/:id/reject", rejectContentController);
 contentRouter.post("/:id/schedule", scheduleContentController);
+contentRouter.post("/:id/video", uploadContentVideoController);
 contentRouter.get("/:id", getContentController);
 contentRouter.patch("/:id", updateContentController);
 contentRouter.delete("/:id", deleteContentController);

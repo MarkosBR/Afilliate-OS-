@@ -1,12 +1,12 @@
 # Architecture
 
-AffiliateOS e um SaaS para afiliados. A Fase 7 entrega a infraestrutura generica de integracoes sociais sobre as Fases 0-6.
+AffiliateOS e um SaaS para afiliados. A Fase 8 entrega OAuth Google real e upload YouTube sobre as Fases 0-7.
 
 ## Principio
 
 Foundation primeiro. Funcionalidade depois.
 
-Nenhuma API real de Instagram, Facebook, TikTok, YouTube, WhatsApp ou Telegram e chamada nesta fase. Tokens nunca saem do backend.
+YouTube e a unica plataforma com OAuth e envio reais. Instagram, Facebook, TikTok, WhatsApp e Telegram permanecem stub. Tokens nunca saem do backend.
 
 ## Visao geral
 
@@ -58,6 +58,10 @@ Implementado:
 - `/api/publications`
 - `/api/notifications`
 - `/api/integrations`
+- `GET /api/integrations/youtube/connect`
+- `GET /api/integrations/youtube/callback`
+- `POST /api/content/:id/video`
+- `POST /api/publications/:id/publish`
 - `GET /go/:slug`
 
 Ainda placeholder (`501`):
@@ -65,16 +69,17 @@ Ainda placeholder (`501`):
 - `/api/leads`
 - `/api/sales`
 
-## Integracoes (Fase 7)
+## Integracoes (Fase 8)
 
-- Modelo `ConnectedAccount` (um por `userId+platform`)
+- Modelo `ConnectedAccount` (um por `userId+platform`) e `OAuthState` one-time HMAC
 - Tokens cifrados em AES-256-GCM (`TOKEN_ENCRYPTION_KEY`, fallback `AUTH_SECRET`)
 - Serializer nunca inclui `accessToken` / `refreshToken`
-- `OAuthProvider` generico: sem OAuth real, responde `OAUTH_NOT_CONFIGURED`
-- `PlatformAdapter` + registry: `validateConnection`, `publish`, `getAccountInfo`, `disconnect`
-- Plataformas nao implementadas: `PLATFORM_NOT_IMPLEMENTED`
-- `Publication.connectedAccountId` opcional, com ownership e compatibilidade de plataforma
-- `publication.executor` processa linhas `SCHEDULED` vencidas sem envio externo
+- YouTube: `YouTubeOAuthProvider` + `YouTubePlatformAdapter` (OAuth 2.0 + upload resumable)
+- App sobe sem `GOOGLE_*`; connect sem config responde `OAUTH_NOT_CONFIGURED`
+- Demais plataformas: stubs `OAUTH_NOT_CONFIGURED` / `PLATFORM_NOT_IMPLEMENTED`
+- Publish YouTube exige conteudo APPROVED/SCHEDULED, conta CONNECTED do mesmo usuario e arquivo local
+- Sucesso: `PUBLISHED` + `externalId`; falha: `FAILED` + notificacao
+- Videos em `uploads/videos/{userId}/` (gitignored); privacidade YouTube `private`, categoria `22`
 
 ### Como adicionar uma plataforma
 

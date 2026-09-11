@@ -2,7 +2,7 @@
 
 AffiliateOS — Seu sistema operacional para afiliados.
 
-Fase 7: infraestrutura de integracoes sociais sobre as Fases 0-6. Sem OAuth real e sem publicacao externa.
+Fase 8: OAuth Google real e upload para o YouTube, sobre as Fases 0-7. As demais plataformas continuam como stub.
 
 ## Stack
 
@@ -37,6 +37,9 @@ AUTH_SECRET=replace-this-auth-secret-min-32-chars
 AI_PROVIDER=
 AI_API_KEY=
 TOKEN_ENCRYPTION_KEY=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=http://localhost:3001/api/integrations/youtube/callback
 FRONTEND_URL=http://localhost:5173
 BACKEND_URL=http://localhost:3001
 PORT=3001
@@ -110,17 +113,28 @@ docs/       arquitetura e roadmap
 scripts/    utilitarios locais
 ```
 
-## Funcionalidades da Fase 7
+## Funcionalidades da Fase 8
 
-- `ConnectedAccount` por usuario e plataforma
-- Tokens cifrados no backend (`TOKEN_ENCRYPTION_KEY`)
-- `/api/integrations` list/get/connect/disconnect/status
-- Stubs OAuth/adapter (`OAUTH_NOT_CONFIGURED`, `PLATFORM_NOT_IMPLEMENTED`)
-- UI `/integrations` sem exibir tokens
-- Agendamento pode referenciar conta propria
+- OAuth 2.0 Google para YouTube (`youtube.upload` + `youtube.readonly`)
+- `GET /api/integrations/youtube/connect` e `GET /api/integrations/youtube/callback`
+- Tokens cifrados no backend; nunca na API, logs ou frontend
+- Upload resumable via YouTube Data API v3 (privacidade `private`, categoria `22`)
+- `POST /api/content/:id/video` e `POST /api/publications/:id/publish`
+- App sobe sem `GOOGLE_*`; sem credenciais responde `OAUTH_NOT_CONFIGURED`
+- Instagram, Facebook, TikTok, WhatsApp e Telegram continuam `Em breve`
 
-As Fases 0-6 permanecem: auth, CRUD, admin, tracking, analytics, content/IA e calendario.
+As Fases 0-7 permanecem: auth, CRUD, admin, tracking, analytics, content/IA, calendario e infraestrutura de integracoes.
+
+## YouTube (Google Cloud)
+
+1. Crie um OAuth client no Google Cloud (tipo Web).
+2. Ative a YouTube Data API v3.
+3. Authorized redirect URI: `http://localhost:3001/api/integrations/youtube/callback`
+4. Preencha `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` e `GOOGLE_REDIRECT_URI` no `.env`.
+5. Em `/integrations`, conecte o canal. Publique so pecas APPROVED/SCHEDULED com arquivo de video local.
+
+Limitacoes: sem cron automatico; publish e manual; videos ficam privados; sem live YouTube nos testes (HTTP mockado).
 
 ## Proximas fases
 
-OAuth real por plataforma e publicacao externa. Ver `docs/ROADMAP.md`.
+OAuth e publicacao real nas demais redes. Ver `docs/ROADMAP.md`.

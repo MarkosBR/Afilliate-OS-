@@ -5,6 +5,7 @@ import { serializeConnectedAccount } from "../../lib/serializers.js";
 import { AppError } from "../../middleware/errorHandler.js";
 import { getOAuthProvider } from "./oauth.provider.js";
 import { getPlatformAdapter } from "../publications/platform.adapter.js";
+import { startYouTubeConnect } from "./youtube.service.js";
 
 export async function listIntegrations(userId: string) {
   const items = await prisma.connectedAccount.findMany({
@@ -32,6 +33,9 @@ export async function getIntegrationStatus(userId: string, id: string) {
 }
 
 export async function connectPlatform(userId: string, platform: IntegrationPlatform) {
+  if (platform === "YOUTUBE") {
+    return startYouTubeConnect(userId);
+  }
   getPlatformAdapter(platform);
   const provider = getOAuthProvider(platform);
   try {

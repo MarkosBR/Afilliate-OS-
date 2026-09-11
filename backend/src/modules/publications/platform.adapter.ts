@@ -1,5 +1,6 @@
 import type { IntegrationPlatform, PublicationPlatform } from "@prisma/client";
 import { AppError } from "../../middleware/errorHandler.js";
+import { YouTubePlatformAdapter } from "../integrations/youtube.adapter.js";
 
 export type FuturePublishInput = {
   publicationId: string;
@@ -46,9 +47,10 @@ export class UnimplementedPlatformAdapter implements PlatformAdapter {
 
 const adapters = new Map<IntegrationPlatform, PlatformAdapter>();
 
-for (const platform of ["INSTAGRAM", "FACEBOOK", "TIKTOK", "YOUTUBE", "WHATSAPP", "TELEGRAM"] as const) {
+for (const platform of ["INSTAGRAM", "FACEBOOK", "TIKTOK", "WHATSAPP", "TELEGRAM"] as const) {
   adapters.set(platform, new UnimplementedPlatformAdapter(platform));
 }
+adapters.set("YOUTUBE", new YouTubePlatformAdapter());
 
 export function getPlatformAdapter(platform: IntegrationPlatform | PublicationPlatform): PlatformAdapter {
   if (platform === "OTHER") {

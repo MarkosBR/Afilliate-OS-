@@ -14,7 +14,7 @@ import { Table, TBody, TD, TH, THead, TR } from "../components/ui/Table";
 import { Textarea } from "../components/ui/Textarea";
 import { useToast } from "../components/ui/Toast";
 
-const kinds: ContentKind[] = ["POST", "CAPTION", "AD", "PRODUCT_DESCRIPTION", "SCRIPT"];
+const kinds: ContentKind[] = ["POST", "CAPTION", "AD", "PRODUCT_DESCRIPTION", "SCRIPT", "VIDEO"];
 const tones: ContentTone[] = ["professional", "casual", "persuasive", "urgent", "friendly"];
 
 const emptyForm = {
@@ -25,6 +25,7 @@ const emptyForm = {
   body: "",
   kind: "POST" as ContentKind,
   channel: "",
+  tags: "",
   status: "DRAFT" as ContentStatus,
   source: "MANUAL" as Content["source"],
   generatedBy: "",
@@ -44,6 +45,7 @@ export function ContentPage() {
   const [tone, setTone] = useState<ContentTone>("professional");
   const [extraContext, setExtraContext] = useState("");
   const [titles, setTitles] = useState<string[]>([]);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
 
   const filteredCampaigns = useMemo(
     () => campaigns.data?.filter((campaign) => !form.productId || campaign.productId === form.productId) ?? [],
@@ -64,11 +66,13 @@ export function ContentPage() {
         body: form.body || null,
         kind: form.kind,
         channel: form.channel || null,
+        tags: form.tags || null,
         source: form.source,
         generatedBy: form.source === "AI" ? form.generatedBy || null : null,
       };
-      if (editing) return api.content.update(editing.id, payload);
-      return api.content.create(payload);
+      const saved = editing ? await api.content.update(editing.id, payload) : await api.content.create(payload);
+      if (videoFile) return api.content.uploadVideo(saved.id, videoFile);
+      return saved;
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["contents"] });
@@ -129,6 +133,7 @@ export function ContentPage() {
     setTitles([]);
     setExtraContext("");
     setTone("professional");
+    setVideoFile(null);
     setForm({
       ...emptyForm,
       productId: products.data?.[0]?.id ?? "",
@@ -140,6 +145,7 @@ export function ContentPage() {
     setEditing(item);
     setTitles([]);
     setExtraContext("");
+    setVideoFile(null);
     setForm({
       productId: item.productId ?? "",
       campaignId: item.campaignId ?? "",
@@ -148,6 +154,7 @@ export function ContentPage() {
       body: item.body ?? "",
       kind: item.kind,
       channel: item.channel ?? "",
+      tags: item.tags ?? "",
       status: item.status,
       source: item.source,
       generatedBy: item.generatedBy ?? "",
@@ -178,7 +185,7 @@ export function ContentPage() {
         <div>
           <h2 className="text-xl font-semibold">Conteudo</h2>
           <p className="text-sm text-[var(--color-text-muted)]">
-            CRUD de pecas e geracao de rascunhos com IA, sem publicacao automatica.
+            CRUD de pecas, rascunhos com IA e upload de video para YouTube. Sem publicacao automatica.
           </p>
         </div>
         <Button onClick={openCreate}>Novo conteudo</Button>
@@ -206,7 +213,7 @@ export function ContentPage() {
             {contents.data.map((item) => (
               <TR key={item.id}>
                 <TD>{item.title}</TD>
-                <TD>{item.kind}</TD>
+                <TD>{item.kind}{item.hasVideo ? " · video" : ""}</TD>
                 <TD>{item.product?.name ?? "-"}</TD>
                 <TD>
                   <Badge tone={item.source === "AI" ? "success" : "neutral"}>{item.source}</Badge>
@@ -336,7 +343,17 @@ export function ContentPage() {
           ) : null}
           <Input label="Titulo" required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
           <Textarea label="Corpo" value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} />
+          <Input label="Tags" value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} />
           <Input label="Canal" value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value })} />
+          <Input
+            label="Video (YouTube)"
+            type="file"
+            accept="video/mp4,video/webm,video/quicktime"
+            onChange={(e) => setVideoFile(e.target.files?.[0] ?? null)}
+          />
+          {editing?.hasVideo ? (
+            <p className="text-sm text-[var(--color-text-muted)]">Arquivo atual: {editing.videoFileName}</p>
+          ) : null}
           <p className="text-sm text-[var(--color-text-muted)]">Status atual: {editing?.status ?? "DRAFT"}</p>
           {save.error ? <p className="text-sm text-[var(--color-danger)]">{save.error.message}</p> : null}
           <Button type="submit" disabled={save.isPending}>

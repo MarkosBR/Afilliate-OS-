@@ -90,8 +90,19 @@ export async function scheduleContent(
 
   const scheduledAt = parseScheduledAt(input.scheduledAt);
   let connectedAccountId: string | null = null;
+  if (input.platform === "YOUTUBE") {
+    if (!input.connectedAccountId) {
+      throw new AppError(400, "YOUTUBE_NOT_CONNECTED", "A connected YouTube account is required.");
+    }
+    if (!content.videoPath) {
+      throw new AppError(400, "VIDEO_REQUIRED", "A video file is required to schedule YouTube publications.");
+    }
+  }
   if (input.connectedAccountId) {
     const account = await assertOwnedConnectedAccount(userId, input.connectedAccountId, input.platform);
+    if (input.platform === "YOUTUBE" && account.status !== "CONNECTED") {
+      throw new AppError(400, "YOUTUBE_NOT_CONNECTED", "YouTube is not connected.");
+    }
     connectedAccountId = account.id;
   }
   const duplicate = await prisma.publication.findFirst({

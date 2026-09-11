@@ -27,6 +27,7 @@ docker compose up -d postgres
 - `content`
 - `publications`
 - `connected_accounts`
+- `oauth_states`
 - `notifications`
 - `analytics`
 - `admin_logs`
@@ -51,20 +52,27 @@ Todos os registros de negocio pertencem a um `User`.
 
 ### Content
 
-- titulo, corpo, kind, status (DRAFT, APPROVED, SCHEDULED, PUBLISHED, FAILED, ARCHIVED), source MANUAL/AI
+- titulo, corpo, kind (inclui VIDEO), tags, videoPath, videoFileName
+- status (DRAFT, APPROVED, SCHEDULED, PUBLISHED, FAILED, ARCHIVED), source MANUAL/AI
+- `videoPath` nunca e serializado; a API expoe `hasVideo` e `videoFileName`
 
 ### Publication
 
-- contentId, platform, scheduledAt, status, publishedAt, errorMessage
+- contentId, platform, scheduledAt, status, publishedAt, errorMessage, externalId
 - `connectedAccountId` opcional (SetNull). Deve pertencer ao mesmo usuario e, quando informado, a plataforma deve ser compativel
 
-### ConnectedAccount (Fase 7)
+### ConnectedAccount
 
 - unique (`userId`, `platform`)
 - platform: INSTAGRAM, FACEBOOK, TIKTOK, YOUTUBE, WHATSAPP, TELEGRAM
 - status: DISCONNECTED, CONNECTING, CONNECTED, EXPIRED, ERROR
 - `accessToken` / `refreshToken` cifrados (AES-256-GCM); nunca serializados na API
 - displayName, externalAccountId, scopes, tokenExpiresAt, metadata
+
+### OAuthState (Fase 8)
+
+- state assinado HMAC, one-time, com `expiresAt` e `usedAt`
+- unique em `state`; FK `userId` com cascade
 
 ### Notification / Analytics / AdminLog
 

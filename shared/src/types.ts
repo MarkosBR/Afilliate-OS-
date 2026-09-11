@@ -6,7 +6,7 @@ export type ProductStatus = "ACTIVE" | "INACTIVE";
 export type LinkStatus = "ACTIVE" | "INACTIVE";
 export type CampaignStatus = "DRAFT" | "ACTIVE" | "PAUSED" | "COMPLETED";
 export type ContentStatus = "DRAFT" | "APPROVED" | "SCHEDULED" | "PUBLISHED" | "FAILED" | "ARCHIVED";
-export type ContentKind = "POST" | "CAPTION" | "AD" | "PRODUCT_DESCRIPTION" | "SCRIPT";
+export type ContentKind = "POST" | "CAPTION" | "AD" | "PRODUCT_DESCRIPTION" | "SCRIPT" | "VIDEO";
 export type ContentSource = "MANUAL" | "AI";
 export type ContentTone = "professional" | "casual" | "persuasive" | "urgent" | "friendly";
 export type PublicationPlatform = "INSTAGRAM" | "TIKTOK" | "YOUTUBE" | "FACEBOOK" | "OTHER";
@@ -89,6 +89,9 @@ export type Content = {
   body: string | null;
   kind: ContentKind;
   channel: string | null;
+  tags: string | null;
+  videoFileName: string | null;
+  hasVideo: boolean;
   status: ContentStatus;
   source: ContentSource;
   generatedBy: string | null;
@@ -123,6 +126,7 @@ export type Publication = {
   status: PublicationStatus;
   publishedAt: string | null;
   errorMessage: string | null;
+  externalId: string | null;
   createdAt: string;
   updatedAt: string;
   content?: Pick<Content, "id" | "title" | "status" | "kind" | "linkId">;

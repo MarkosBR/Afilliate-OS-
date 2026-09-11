@@ -9,7 +9,7 @@
     "start": "node dist/index.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "tsc -p tsconfig.json --noEmit",
-    "test": "bash ../scripts/with-env.sh tsx --test src/modules/health/health.test.ts src/modules/auth/auth.test.ts src/modules/phase1.isolation.test.ts src/modules/admin/admin.test.ts src/modules/tracking/tracking.test.ts src/modules/analytics/analytics.test.ts src/modules/ai/ai.prompts.test.ts src/modules/content/content.test.ts src/modules/publications/publications.test.ts src/modules/integrations/integrations.test.ts",
+    "test": "bash ../scripts/with-env.sh tsx --test src/modules/health/health.test.ts src/modules/auth/auth.test.ts src/modules/phase1.isolation.test.ts src/modules/admin/admin.test.ts src/modules/tracking/tracking.test.ts src/modules/analytics/analytics.test.ts src/modules/ai/ai.prompts.test.ts src/modules/content/content.test.ts src/modules/publications/publications.test.ts src/modules/integrations/integrations.test.ts src/modules/integrations/youtube.test.ts",
     "prisma:generate": "prisma generate --schema ../prisma/schema.prisma",
     "prisma:migrate": "bash ../scripts/with-env.sh prisma migrate dev --schema ../prisma/schema.prisma",
     "prisma:migrate:deploy": "bash ../scripts/with-env.sh prisma migrate deploy --schema ../prisma/schema.prisma",

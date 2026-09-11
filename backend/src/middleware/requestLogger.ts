@@ -5,7 +5,12 @@ export function requestLogger(req: Request, res: Response, next: NextFunction) {
   res.on("finish", () => {
     if (process.env.NODE_ENV === "test") return;
     const duration = Date.now() - started;
-    console.log(`${req.method} ${req.originalUrl} ${res.statusCode} ${duration}ms`);
+    const path = req.originalUrl.split("?")[0];
+    const safeUrl =
+      path.includes("/integrations/youtube/callback") || path.includes("/integrations/youtube/connect")
+        ? path
+        : req.originalUrl;
+    console.log(`${req.method} ${safeUrl} ${res.statusCode} ${duration}ms`);
   });
   next();
 }

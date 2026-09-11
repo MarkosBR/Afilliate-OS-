@@ -1,5 +1,6 @@
 import { AppError } from "../../middleware/errorHandler.js";
 import type { IntegrationPlatform, OAuthProvider, OAuthTokenSet } from "./oauth.types.js";
+import { YouTubeOAuthProvider, isYouTubeOAuthConfigured } from "./youtube.oauth.js";
 
 export class UnconfiguredOAuthProvider implements OAuthProvider {
   constructor(readonly platform: IntegrationPlatform) {}
@@ -22,5 +23,8 @@ export class UnconfiguredOAuthProvider implements OAuthProvider {
 }
 
 export function getOAuthProvider(platform: IntegrationPlatform): OAuthProvider {
+  if (platform === "YOUTUBE" && isYouTubeOAuthConfigured()) {
+    return new YouTubeOAuthProvider();
+  }
   return new UnconfiguredOAuthProvider(platform);
 }

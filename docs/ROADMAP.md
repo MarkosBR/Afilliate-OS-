@@ -66,7 +66,7 @@ Status: concluida.
 
 ## Fase 07 — Integracoes (infraestrutura)
 
-Status: concluida nesta entrega.
+Status: concluida.
 
 - `ConnectedAccount` e tokens cifrados
 - OAuth/adapter stubs (`OAUTH_NOT_CONFIGURED`, `PLATFORM_NOT_IMPLEMENTED`)
@@ -75,8 +75,19 @@ Status: concluida nesta entrega.
 - Ownership de `Publication.connectedAccountId`
 - Executor interno sem publish real
 
+## Fase 08 — YouTube real
+
+Status: concluida nesta entrega.
+
+- OAuth 2.0 Google (`youtube.upload`, `youtube.readonly`)
+- State HMAC one-time; callback sem autenticacao de sessao
+- Upload resumable YouTube Data API v3
+- `ContentKind.VIDEO`, tags e arquivo local
+- Publish manual via executor; sem cron
+- Demais plataformas continuam stub
+
 ## Proximas fases (planejado)
 
-### Fase 08 — Conexoes reais
+### Fase 09 — Demais redes
 
-OAuth configurado por plataforma, refresh de tokens e publicacao externa real.
+OAuth e publicacao real em Instagram, Facebook, TikTok e correlatas.

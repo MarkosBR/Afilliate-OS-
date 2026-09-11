@@ -160,6 +160,24 @@ export const api = {
     remove: (id: string) => request<{ ok: boolean }>(`/api/content/${id}`, { method: "DELETE" }),
     approve: (id: string) => request<Content>(`/api/content/${id}/approve`, { method: "POST" }),
     reject: (id: string) => request<Content>(`/api/content/${id}/reject`, { method: "POST" }),
+    uploadVideo: async (id: string, file: File) => {
+      const token = getToken();
+      const body = new FormData();
+      body.append("video", file);
+      const headers = new Headers();
+      if (token) headers.set("Authorization", `Bearer ${token}`);
+      const response = await fetch(`/api/content/${id}/video`, {
+        method: "POST",
+        headers,
+        body,
+        credentials: "include",
+      });
+      const payload = (await response.json()) as { success: true; data: Content } | { success: false; error: { code: string; message: string } };
+      if (!("success" in payload) || payload.success !== true) {
+        throw new ApiError(response.status, payload.error?.code ?? "ERROR", payload.error?.message ?? "Request failed");
+      }
+      return payload.data;
+    },
     schedule: (
       id: string,
       body: { platform: PublicationPlatform; scheduledAt: string; connectedAccountId?: string | null },
@@ -172,6 +190,7 @@ export const api = {
     list: () => request<Publication[]>("/api/publications"),
     get: (id: string) => request<Publication>(`/api/publications/${id}`),
     cancel: (id: string) => request<Publication>(`/api/publications/${id}/cancel`, { method: "POST" }),
+    publish: (id: string) => request<Publication>(`/api/publications/${id}/publish`, { method: "POST" }),
   },
   notifications: {
     list: () => request<AppNotification[]>("/api/notifications"),
@@ -185,7 +204,8 @@ export const api = {
         `/api/integrations/${id}/status`,
       ),
     connect: (platform: IntegrationPlatform) =>
-      request<ConnectedAccount>(`/api/integrations/${platform}/connect`, { method: "POST" }),
+      request<ConnectedAccount | { authorizationUrl: string }>(`/api/integrations/${platform}/connect`, { method: "POST" }),
+    youtubeConnectUrl: "/api/integrations/youtube/connect?json=1",
     disconnect: (id: string) => request<ConnectedAccount>(`/api/integrations/${id}/disconnect`, { method: "POST" }),
   },
   ai: {

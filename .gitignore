@@ -21,3 +21,4 @@ backend/generated
 frontend/dist
 .turbo
 .cache
+uploads

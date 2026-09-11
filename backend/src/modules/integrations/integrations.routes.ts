@@ -6,10 +6,14 @@ import {
   getIntegrationController,
   integrationStatusController,
   listIntegrationsController,
+  youtubeCallbackController,
+  youtubeConnectController,
 } from "./integrations.controller.js";
 
 export const integrationsRouter = Router();
 
+integrationsRouter.get("/youtube/callback", youtubeCallbackController);
+integrationsRouter.get("/youtube/connect", requireAuth, youtubeConnectController);
 integrationsRouter.use(requireAuth);
 integrationsRouter.get("/", listIntegrationsController);
 integrationsRouter.post("/:platform/connect", connectPlatformController);

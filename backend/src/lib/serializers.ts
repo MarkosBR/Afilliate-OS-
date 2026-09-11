@@ -122,6 +122,7 @@ export function serializePublication(
     status: publication.status,
     publishedAt: publication.publishedAt?.toISOString() ?? null,
     errorMessage: publication.errorMessage,
+    externalId: publication.externalId,
     createdAt: publication.createdAt.toISOString(),
     updatedAt: publication.updatedAt.toISOString(),
     content: publication.content
@@ -167,6 +168,9 @@ export function serializeContent(
     body: content.body,
     kind: content.kind,
     channel: content.channel,
+    tags: content.tags,
+    videoFileName: content.videoFileName,
+    hasVideo: Boolean(content.videoPath),
     status: content.status,
     source: content.source,
     generatedBy: content.generatedBy,

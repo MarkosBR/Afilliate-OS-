@@ -2,6 +2,7 @@ import type { ContentKind, ContentSource, ContentStatus } from "@prisma/client";
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../middleware/errorHandler.js";
 import { serializeContent } from "../../lib/serializers.js";
+import { removeUserVideo, saveUserVideo } from "../../lib/media.js";
 import { createNotification } from "../notifications/notifications.service.js";
 
 const include = {
@@ -67,6 +68,9 @@ export async function createContent(
     body?: string | null;
     kind?: ContentKind;
     channel?: string | null;
+    tags?: string | null;
+    videoPath?: string | null;
+    videoFileName?: string | null;
     status?: ContentStatus;
     source?: ContentSource;
     generatedBy?: string | null;
@@ -83,6 +87,9 @@ export async function createContent(
       body: input.body ?? null,
       kind: input.kind ?? "POST",
       channel: input.channel ?? null,
+      tags: input.tags ?? null,
+      videoPath: input.videoPath ?? null,
+      videoFileName: input.videoFileName ?? null,
       status: "DRAFT",
       source: input.source ?? "MANUAL",
       generatedBy: input.source === "AI" ? input.generatedBy ?? null : null,
@@ -103,6 +110,9 @@ export async function updateContent(
     body?: string | null;
     kind?: ContentKind;
     channel?: string | null;
+    tags?: string | null;
+    videoPath?: string | null;
+    videoFileName?: string | null;
     status?: ContentStatus;
     source?: ContentSource;
     generatedBy?: string | null;
@@ -131,6 +141,9 @@ export async function updateContent(
       body: input.body === undefined ? existing.body : input.body,
       kind: input.kind ?? existing.kind,
       channel: input.channel === undefined ? existing.channel : input.channel,
+      tags: input.tags === undefined ? existing.tags : input.tags,
+      videoPath: input.videoPath === undefined ? existing.videoPath : input.videoPath,
+      videoFileName: input.videoFileName === undefined ? existing.videoFileName : input.videoFileName,
       source,
       generatedBy: source === "AI" ? (input.generatedBy === undefined ? existing.generatedBy : input.generatedBy) : null,
     },
@@ -144,6 +157,9 @@ export async function approveContent(userId: string, id: string) {
   if (!existing) throw new AppError(404, "NOT_FOUND", "Content not found.");
   if (existing.status !== "DRAFT" && existing.status !== "FAILED") {
     throw new AppError(400, "INVALID_STATUS", "Only draft or failed content can be approved.");
+  }
+  if (existing.kind === "VIDEO" && !existing.videoPath) {
+    throw new AppError(400, "VIDEO_REQUIRED", "A video file is required before approval.");
   }
   const item = await prisma.content.update({
     where: { id },
@@ -191,5 +207,26 @@ export async function rejectContent(userId: string, id: string) {
 export async function deleteContent(userId: string, id: string) {
   const existing = await prisma.content.findFirst({ where: { id, userId } });
   if (!existing) throw new AppError(404, "NOT_FOUND", "Content not found.");
+  await removeUserVideo(userId, existing.videoPath);
   await prisma.content.delete({ where: { id } });
+}
+
+export async function attachContentVideo(userId: string, id: string, file: { filename: string; buffer: Buffer }) {
+  const existing = await prisma.content.findFirst({ where: { id, userId } });
+  if (!existing) throw new AppError(404, "NOT_FOUND", "Content not found.");
+  if (existing.status === "PUBLISHED") {
+    throw new AppError(400, "INVALID_STATUS", "Published content cannot receive a new video.");
+  }
+  await removeUserVideo(userId, existing.videoPath);
+  const stored = await saveUserVideo(userId, file.filename, file.buffer);
+  const item = await prisma.content.update({
+    where: { id },
+    data: {
+      videoPath: `${userId}/${stored.storedName}`,
+      videoFileName: stored.originalName,
+      kind: existing.kind === "POST" ? "VIDEO" : existing.kind,
+    },
+    include,
+  });
+  return serializeContent(item);
 }

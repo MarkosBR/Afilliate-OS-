@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const contentKindSchema = z.enum(["POST", "CAPTION", "AD", "PRODUCT_DESCRIPTION", "SCRIPT"]);
+export const contentKindSchema = z.enum(["POST", "CAPTION", "AD", "PRODUCT_DESCRIPTION", "SCRIPT", "VIDEO"]);
 export const contentToneSchema = z.enum(["professional", "casual", "persuasive", "urgent", "friendly"]);
 
 export const generateSchema = z.object({
