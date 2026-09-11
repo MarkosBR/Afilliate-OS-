@@ -2,7 +2,7 @@
 
 AffiliateOS — Seu sistema operacional para afiliados.
 
-Fase 8: OAuth Google real e upload para o YouTube, sobre as Fases 0-7. As demais plataformas continuam como stub.
+Fase 9: OAuth TikTok real e Content Posting API, sobre as Fases 0-8 (incluindo YouTube). Instagram, Facebook, WhatsApp e Telegram continuam como stub.
 
 ## Stack
 
@@ -113,17 +113,17 @@ docs/       arquitetura e roadmap
 scripts/    utilitarios locais
 ```
 
-## Funcionalidades da Fase 8
+## Funcionalidades da Fase 9
 
-- OAuth 2.0 Google para YouTube (`youtube.upload` + `youtube.readonly`)
-- `GET /api/integrations/youtube/connect` e `GET /api/integrations/youtube/callback`
+- OAuth 2.0 TikTok (`user.info.basic` + `video.publish`)
+- `GET /api/integrations/tiktok/connect` e `GET /api/integrations/tiktok/callback`
+- Content Posting API: `FILE_UPLOAD` + PUT em `upload_url` + `status/fetch`
+- `PUBLISHED` so quando TikTok confirma `PUBLISH_COMPLETE`; senao `PENDING` (`TIKTOK_PROCESSING`)
 - Tokens cifrados no backend; nunca na API, logs ou frontend
-- Upload resumable via YouTube Data API v3 (privacidade `private`, categoria `22`)
-- `POST /api/content/:id/video` e `POST /api/publications/:id/publish`
-- App sobe sem `GOOGLE_*`; sem credenciais responde `OAUTH_NOT_CONFIGURED`
-- Instagram, Facebook, TikTok, WhatsApp e Telegram continuam `Em breve`
+- App sobe sem `TIKTOK_*` / `GOOGLE_*`; sem credenciais responde `OAUTH_NOT_CONFIGURED`
+- Instagram, Facebook, WhatsApp e Telegram continuam `Em breve`
 
-As Fases 0-7 permanecem: auth, CRUD, admin, tracking, analytics, content/IA, calendario e infraestrutura de integracoes.
+As Fases 0-8 permanecem, inclusive OAuth e upload reais do YouTube.
 
 ## YouTube (Google Cloud)
 
@@ -134,6 +134,18 @@ As Fases 0-7 permanecem: auth, CRUD, admin, tracking, analytics, content/IA, cal
 5. Em `/integrations`, conecte o canal. Publique so pecas APPROVED/SCHEDULED com arquivo de video local.
 
 Limitacoes: sem cron automatico; publish e manual; videos ficam privados; sem live YouTube nos testes (HTTP mockado).
+
+## TikTok (Developer Portal)
+
+1. Crie um app em https://developers.tiktok.com/ (Login Kit + Content Posting API).
+2. Redirect URI: `http://localhost:3001/api/integrations/tiktok/callback`
+3. Scopes: `user.info.basic`, `video.publish`.
+4. Preencha `TIKTOK_CLIENT_KEY`, `TIKTOK_CLIENT_SECRET` e `TIKTOK_REDIRECT_URI` no `.env`.
+5. Direct Post (`video.publish`) exige aprovacao do app TikTok. Sem auditoria, a API pode recusar o envio.
+6. Fluxo: init (`source=FILE_UPLOAD`) -> PUT no `upload_url` -> `status/fetch`. Privacy prefere `SELF_ONLY`.
+7. Caption usa titulo + corpo (max 2200). Publish manual; consultar de novo enquanto `PENDING`.
+
+Limitacoes reais: app TikTok precisa de aprovacao Content Posting / Direct Post; sem cron; testes mockam HTTP e nao chamam a API live.
 
 ## Proximas fases
 

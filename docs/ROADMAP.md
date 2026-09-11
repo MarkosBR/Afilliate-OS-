@@ -77,17 +77,26 @@ Status: concluida.
 
 ## Fase 08 — YouTube real
 
-Status: concluida nesta entrega.
+Status: concluida.
 
 - OAuth 2.0 Google (`youtube.upload`, `youtube.readonly`)
 - State HMAC one-time; callback sem autenticacao de sessao
 - Upload resumable YouTube Data API v3
 - `ContentKind.VIDEO`, tags e arquivo local
 - Publish manual via executor; sem cron
-- Demais plataformas continuam stub
+
+## Fase 09 — TikTok real
+
+Status: concluida nesta entrega.
+
+- OAuth 2.0 TikTok (`user.info.basic`, `video.publish`)
+- Content Posting API com `FILE_UPLOAD` + `status/fetch`
+- `PUBLISHED` so apos `PUBLISH_COMPLETE`; processamento vira `PENDING`
+- Publish manual; sem cron; exige video local e conta CONNECTED
+- Instagram, Facebook, WhatsApp e Telegram continuam stub
 
 ## Proximas fases (planejado)
 
-### Fase 09 — Demais redes
+### Fase 10 — Demais redes
 
-OAuth e publicacao real em Instagram, Facebook, TikTok e correlatas.
+OAuth e publicacao real em Instagram, Facebook e correlatas.

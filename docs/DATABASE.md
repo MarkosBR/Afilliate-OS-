@@ -69,10 +69,13 @@ Todos os registros de negocio pertencem a um `User`.
 - `accessToken` / `refreshToken` cifrados (AES-256-GCM); nunca serializados na API
 - displayName, externalAccountId, scopes, tokenExpiresAt, metadata
 
-### OAuthState (Fase 8)
+### OAuthState (Fases 8-9)
 
 - state assinado HMAC, one-time, com `expiresAt` e `usedAt`
 - unique em `state`; FK `userId` com cascade
+- reutilizado por YouTube e TikTok; Fase 9 nao altera o schema
+
+TikTok em processamento usa `Publication.status=PENDING` e `errorMessage=TIKTOK_PROCESSING` ate `PUBLISH_COMPLETE`.
 
 ### Notification / Analytics / AdminLog
 

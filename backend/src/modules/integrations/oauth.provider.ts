@@ -1,6 +1,7 @@
 import { AppError } from "../../middleware/errorHandler.js";
 import type { IntegrationPlatform, OAuthProvider, OAuthTokenSet } from "./oauth.types.js";
 import { YouTubeOAuthProvider, isYouTubeOAuthConfigured } from "./youtube.oauth.js";
+import { TikTokOAuthProvider, isTikTokOAuthConfigured } from "./tiktok.oauth.js";
 
 export class UnconfiguredOAuthProvider implements OAuthProvider {
   constructor(readonly platform: IntegrationPlatform) {}
@@ -25,6 +26,9 @@ export class UnconfiguredOAuthProvider implements OAuthProvider {
 export function getOAuthProvider(platform: IntegrationPlatform): OAuthProvider {
   if (platform === "YOUTUBE" && isYouTubeOAuthConfigured()) {
     return new YouTubeOAuthProvider();
+  }
+  if (platform === "TIKTOK" && isTikTokOAuthConfigured()) {
+    return new TikTokOAuthProvider();
   }
   return new UnconfiguredOAuthProvider(platform);
 }

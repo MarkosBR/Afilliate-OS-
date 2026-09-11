@@ -116,9 +116,9 @@ describe("phase 7 integrations", { concurrency: false }, () => {
     const alphaAccount = await prisma.connectedAccount.create({
       data: {
         userId: alpha.user.id,
-        platform: "TIKTOK",
+        platform: "FACEBOOK",
         status: "CONNECTED",
-        displayName: "Alpha TikTok",
+        displayName: "Alpha Facebook",
         accessToken: encryptSecret("alpha-access"),
         refreshToken: encryptSecret("alpha-refresh"),
       },
@@ -126,9 +126,9 @@ describe("phase 7 integrations", { concurrency: false }, () => {
     const betaAccount = await prisma.connectedAccount.create({
       data: {
         userId: beta.user.id,
-        platform: "TIKTOK",
+        platform: "FACEBOOK",
         status: "CONNECTED",
-        displayName: "Beta TikTok",
+        displayName: "Beta Facebook",
         accessToken: encryptSecret("beta-access"),
         refreshToken: encryptSecret("beta-refresh"),
       },
@@ -217,6 +217,7 @@ describe("phase 7 integrations", { concurrency: false }, () => {
       scheduledAt: new Date(),
     }));
     assert.equal(getPlatformAdapter("YOUTUBE").platform, "YOUTUBE");
+    assert.equal(getPlatformAdapter("TIKTOK").platform, "TIKTOK");
 
     const serialized = serializeConnectedAccount({
       id: "acc",

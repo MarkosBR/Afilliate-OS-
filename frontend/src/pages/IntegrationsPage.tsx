@@ -41,18 +41,18 @@ export function IntegrationsPage() {
 
   const connect = useMutation({
     mutationFn: async (platform: IntegrationPlatform) => {
-      if (platform === "YOUTUBE") {
-        const result = await api.integrations.connect("YOUTUBE");
+      if (platform === "YOUTUBE" || platform === "TIKTOK") {
+        const result = await api.integrations.connect(platform);
         if (result && "authorizationUrl" in result && result.authorizationUrl) {
           window.location.assign(result.authorizationUrl);
           return result;
         }
-        throw new ApiError(501, "OAUTH_NOT_CONFIGURED", "YouTube OAuth is not configured.");
+        throw new ApiError(501, "OAUTH_NOT_CONFIGURED", `${platform} OAuth is not configured.`);
       }
       return api.integrations.connect(platform);
     },
     onSuccess: async (_data, platform) => {
-      if (platform === "YOUTUBE") return;
+      if (platform === "YOUTUBE" || platform === "TIKTOK") return;
       await queryClient.invalidateQueries({ queryKey: ["integrations"] });
     },
     onError: (error) => {
@@ -89,7 +89,7 @@ export function IntegrationsPage() {
       <div>
         <h2 className="text-xl font-semibold">Integracoes</h2>
         <p className="text-sm text-[var(--color-text-muted)]">
-          YouTube usa OAuth Google real. As demais plataformas permanecem em breve.
+          YouTube e TikTok usam OAuth real. Instagram, Facebook, WhatsApp e Telegram permanecem em breve.
         </p>
         {oauthError ? (
           <p className="mt-2 text-sm text-[var(--color-danger)]">Falha OAuth: {oauthError}</p>
@@ -100,30 +100,30 @@ export function IntegrationsPage() {
         {INTEGRATION_PLATFORMS.map((platform) => {
           const account = accountFor(integrations.data, platform);
           const status = account?.status ?? "DISCONNECTED";
-          const isYouTube = platform === "YOUTUBE";
+          const live = platform === "YOUTUBE" || platform === "TIKTOK";
           return (
             <Card key={platform}>
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <CardTitle>{labels[platform]}</CardTitle>
                   <CardDescription>
-                    {isYouTube
-                      ? account?.displayName || "Nenhum canal conectado."
+                    {live
+                      ? account?.displayName || "Nenhuma conta conectada."
                       : "Em breve. Esta plataforma ainda nao foi implementada."}
                   </CardDescription>
                 </div>
-                <Badge tone={isYouTube ? statusTone(status) : "neutral"}>{isYouTube ? status : "EM BREVE"}</Badge>
+                <Badge tone={live ? statusTone(status) : "neutral"}>{live ? status : "EM BREVE"}</Badge>
               </div>
               <div className="mt-4 flex gap-2">
-                {isYouTube ? (
+                {live ? (
                   <>
                     {status !== "CONNECTED" ? (
                       <Button
                         size="sm"
-                        onClick={() => connect.mutate("YOUTUBE")}
+                        onClick={() => connect.mutate(platform)}
                         disabled={connect.isPending || disconnect.isPending}
                       >
-                        {status === "EXPIRED" || status === "ERROR" ? "Reconectar YouTube" : "Conectar YouTube"}
+                        {status === "EXPIRED" || status === "ERROR" ? `Reconectar ${labels[platform]}` : `Conectar ${labels[platform]}`}
                       </Button>
                     ) : null}
                     {account ? (

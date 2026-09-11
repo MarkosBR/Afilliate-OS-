@@ -90,18 +90,20 @@ export async function scheduleContent(
 
   const scheduledAt = parseScheduledAt(input.scheduledAt);
   let connectedAccountId: string | null = null;
-  if (input.platform === "YOUTUBE") {
+  if (input.platform === "YOUTUBE" || input.platform === "TIKTOK") {
+    const missingCode = input.platform === "YOUTUBE" ? "YOUTUBE_NOT_CONNECTED" : "TIKTOK_NOT_CONNECTED";
     if (!input.connectedAccountId) {
-      throw new AppError(400, "YOUTUBE_NOT_CONNECTED", "A connected YouTube account is required.");
+      throw new AppError(400, missingCode, `A connected ${input.platform} account is required.`);
     }
     if (!content.videoPath) {
-      throw new AppError(400, "VIDEO_REQUIRED", "A video file is required to schedule YouTube publications.");
+      throw new AppError(400, "VIDEO_REQUIRED", `A video file is required to schedule ${input.platform} publications.`);
     }
   }
   if (input.connectedAccountId) {
     const account = await assertOwnedConnectedAccount(userId, input.connectedAccountId, input.platform);
-    if (input.platform === "YOUTUBE" && account.status !== "CONNECTED") {
-      throw new AppError(400, "YOUTUBE_NOT_CONNECTED", "YouTube is not connected.");
+    if ((input.platform === "YOUTUBE" || input.platform === "TIKTOK") && account.status !== "CONNECTED") {
+      const missingCode = input.platform === "YOUTUBE" ? "YOUTUBE_NOT_CONNECTED" : "TIKTOK_NOT_CONNECTED";
+      throw new AppError(400, missingCode, `${input.platform} is not connected.`);
     }
     connectedAccountId = account.id;
   }

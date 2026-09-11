@@ -1,6 +1,7 @@
 import type { IntegrationPlatform, PublicationPlatform } from "@prisma/client";
 import { AppError } from "../../middleware/errorHandler.js";
 import { YouTubePlatformAdapter } from "../integrations/youtube.adapter.js";
+import { TikTokPlatformAdapter } from "../integrations/tiktok.adapter.js";
 
 export type FuturePublishInput = {
   publicationId: string;
@@ -20,7 +21,7 @@ export type ConnectionInfo = {
 export interface PlatformAdapter {
   readonly platform: IntegrationPlatform;
   validateConnection(account: ConnectionInfo): Promise<boolean>;
-  publish(input: FuturePublishInput): Promise<{ externalId: string }>;
+  publish(input: FuturePublishInput): Promise<{ externalId: string; status?: "PUBLISHED" | "PROCESSING" }>;
   getAccountInfo(account: ConnectionInfo): Promise<{ displayName: string | null; externalAccountId: string | null }>;
   disconnect(account: ConnectionInfo): Promise<void>;
 }
@@ -32,7 +33,7 @@ export class UnimplementedPlatformAdapter implements PlatformAdapter {
     throw new AppError(501, "PLATFORM_NOT_IMPLEMENTED", "This platform is not implemented yet.");
   }
 
-  async publish(_input: FuturePublishInput): Promise<{ externalId: string }> {
+  async publish(_input: FuturePublishInput): Promise<{ externalId: string; status?: "PUBLISHED" | "PROCESSING" }> {
     throw new AppError(501, "PLATFORM_NOT_IMPLEMENTED", "This platform is not implemented yet.");
   }
 
@@ -47,10 +48,11 @@ export class UnimplementedPlatformAdapter implements PlatformAdapter {
 
 const adapters = new Map<IntegrationPlatform, PlatformAdapter>();
 
-for (const platform of ["INSTAGRAM", "FACEBOOK", "TIKTOK", "WHATSAPP", "TELEGRAM"] as const) {
+for (const platform of ["INSTAGRAM", "FACEBOOK", "WHATSAPP", "TELEGRAM"] as const) {
   adapters.set(platform, new UnimplementedPlatformAdapter(platform));
 }
 adapters.set("YOUTUBE", new YouTubePlatformAdapter());
+adapters.set("TIKTOK", new TikTokPlatformAdapter());
 
 export function getPlatformAdapter(platform: IntegrationPlatform | PublicationPlatform): PlatformAdapter {
   if (platform === "OTHER") {

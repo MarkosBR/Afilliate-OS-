@@ -72,6 +72,8 @@ export function CalendarPage() {
   const contents = useQuery({ queryKey: ["contents"], queryFn: api.content.list });
   const integrations = useQuery({ queryKey: ["integrations"], queryFn: api.integrations.list });
   const youtubeAccounts = integrations.data?.filter((item) => item.platform === "YOUTUBE" && item.status === "CONNECTED") ?? [];
+  const tiktokAccounts = integrations.data?.filter((item) => item.platform === "TIKTOK" && item.status === "CONNECTED") ?? [];
+  const liveAccounts = schedulePlatform === "TIKTOK" ? tiktokAccounts : youtubeAccounts;
 
   const approve = useMutation({
     mutationFn: (id: string) => api.content.approve(id),
@@ -88,7 +90,8 @@ export function CalendarPage() {
       return api.content.schedule(selected.id, {
         platform: schedulePlatform,
         scheduledAt: new Date(scheduleAt).toISOString(),
-        connectedAccountId: schedulePlatform === "YOUTUBE" ? connectedAccountId || null : null,
+        connectedAccountId:
+          schedulePlatform === "YOUTUBE" || schedulePlatform === "TIKTOK" ? connectedAccountId || null : null,
       });
     },
     onSuccess: async () => {
@@ -113,7 +116,13 @@ export function CalendarPage() {
     onSuccess: async (item) => {
       await queryClient.invalidateQueries({ queryKey: ["calendar"] });
       await queryClient.invalidateQueries({ queryKey: ["contents"] });
-      toast.push(item.status === "PUBLISHED" ? "YouTube confirmou a publicacao." : `Status: ${item.status}`);
+      toast.push(
+        item.status === "PUBLISHED"
+          ? "Publicacao confirmada."
+          : item.status === "PENDING"
+            ? "TikTok ainda esta processando o video."
+            : `Status: ${item.status}`,
+      );
     },
     onError: (error) => {
       toast.push(error instanceof Error ? error.message : "Falha ao publicar.");
@@ -144,7 +153,7 @@ export function CalendarPage() {
         <div>
           <h2 className="text-xl font-semibold">Calendario</h2>
           <p className="text-sm text-[var(--color-text-muted)]">
-            Aprovar, agendar e publicar no YouTube. As demais plataformas continuam sem envio externo.
+            Aprovar, agendar e publicar no YouTube ou TikTok. Instagram e Facebook continuam sem envio externo.
           </p>
         </div>
         <Button onClick={() => schedulable[0] && openSchedule(schedulable[0])} disabled={!schedulable.length}>
@@ -204,14 +213,18 @@ export function CalendarPage() {
                 <TD className="text-right">
                   {item.status === "SCHEDULED" || item.status === "PENDING" || item.status === "READY" ? (
                     <>
-                      {item.platform === "YOUTUBE" ? (
+                      {item.platform === "YOUTUBE" || item.platform === "TIKTOK" ? (
                         <Button variant="ghost" size="sm" onClick={() => publishNow.mutate(item.id)} disabled={publishNow.isPending}>
-                          Publicar YouTube
+                          {item.status === "PENDING" && item.platform === "TIKTOK"
+                            ? "Consultar TikTok"
+                            : `Publicar ${item.platform === "TIKTOK" ? "TikTok" : "YouTube"}`}
                         </Button>
                       ) : null}
-                      <Button variant="ghost" size="sm" onClick={() => cancel.mutate(item.id)}>
-                        Cancelar
-                      </Button>
+                      {item.status !== "PENDING" ? (
+                        <Button variant="ghost" size="sm" onClick={() => cancel.mutate(item.id)}>
+                          Cancelar
+                        </Button>
+                      ) : null}
                     </>
                   ) : null}
                 </TD>
@@ -243,7 +256,17 @@ export function CalendarPage() {
           <Select
             label="Plataforma"
             value={schedulePlatform}
-            onChange={(e) => setSchedulePlatform(e.target.value as PublicationPlatform)}
+            onChange={(e) => {
+              const next = e.target.value as PublicationPlatform;
+              setSchedulePlatform(next);
+              setConnectedAccountId(
+                next === "TIKTOK"
+                  ? (tiktokAccounts[0]?.id ?? "")
+                  : next === "YOUTUBE"
+                    ? (youtubeAccounts[0]?.id ?? "")
+                    : "",
+              );
+            }}
           >
             {platforms.map((item) => (
               <option key={item} value={item}>
@@ -251,17 +274,21 @@ export function CalendarPage() {
               </option>
             ))}
           </Select>
-          {schedulePlatform === "YOUTUBE" ? (
-            <Select label="Conta YouTube" value={connectedAccountId} onChange={(e) => setConnectedAccountId(e.target.value)}>
-              <option value="">Selecione o canal</option>
-              {youtubeAccounts.map((item) => (
+          {schedulePlatform === "YOUTUBE" || schedulePlatform === "TIKTOK" ? (
+            <Select
+              label={schedulePlatform === "TIKTOK" ? "Conta TikTok" : "Conta YouTube"}
+              value={connectedAccountId}
+              onChange={(e) => setConnectedAccountId(e.target.value)}
+            >
+              <option value="">Selecione a conta</option>
+              {liveAccounts.map((item) => (
                 <option key={item.id} value={item.id}>
                   {item.displayName || item.externalAccountId || item.id}
                 </option>
               ))}
             </Select>
           ) : null}
-          {schedulePlatform === "YOUTUBE" && selected && !selected.hasVideo ? (
+          {(schedulePlatform === "YOUTUBE" || schedulePlatform === "TIKTOK") && selected && !selected.hasVideo ? (
             <p className="text-sm text-[var(--color-danger)]">Este conteudo precisa de um arquivo de video.</p>
           ) : null}
           <Input
