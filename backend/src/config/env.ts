@@ -21,6 +21,9 @@ const envSchema = z.object({
   TIKTOK_CLIENT_KEY: z.string().optional().default(""),
   TIKTOK_CLIENT_SECRET: z.string().optional().default(""),
   TIKTOK_REDIRECT_URI: z.string().optional().default(""),
+  META_APP_ID: z.string().optional().default(""),
+  META_APP_SECRET: z.string().optional().default(""),
+  META_REDIRECT_URI: z.string().optional().default(""),
   FRONTEND_URL: z.string().url().default("http://localhost:5173"),
   BACKEND_URL: z.string().url().default("http://localhost:3001"),
 });

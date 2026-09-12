@@ -41,7 +41,7 @@ export function IntegrationsPage() {
 
   const connect = useMutation({
     mutationFn: async (platform: IntegrationPlatform) => {
-      if (platform === "YOUTUBE" || platform === "TIKTOK") {
+      if (platform === "YOUTUBE" || platform === "TIKTOK" || platform === "FACEBOOK" || platform === "INSTAGRAM") {
         const result = await api.integrations.connect(platform);
         if (result && "authorizationUrl" in result && result.authorizationUrl) {
           window.location.assign(result.authorizationUrl);
@@ -52,7 +52,7 @@ export function IntegrationsPage() {
       return api.integrations.connect(platform);
     },
     onSuccess: async (_data, platform) => {
-      if (platform === "YOUTUBE" || platform === "TIKTOK") return;
+      if (platform === "YOUTUBE" || platform === "TIKTOK" || platform === "FACEBOOK" || platform === "INSTAGRAM") return;
       await queryClient.invalidateQueries({ queryKey: ["integrations"] });
     },
     onError: (error) => {
@@ -89,7 +89,7 @@ export function IntegrationsPage() {
       <div>
         <h2 className="text-xl font-semibold">Integracoes</h2>
         <p className="text-sm text-[var(--color-text-muted)]">
-          YouTube e TikTok usam OAuth real. Instagram, Facebook, WhatsApp e Telegram permanecem em breve.
+          YouTube, TikTok, Facebook e Instagram usam OAuth real. WhatsApp e Telegram permanecem em breve.
         </p>
         {oauthError ? (
           <p className="mt-2 text-sm text-[var(--color-danger)]">Falha OAuth: {oauthError}</p>
@@ -100,7 +100,7 @@ export function IntegrationsPage() {
         {INTEGRATION_PLATFORMS.map((platform) => {
           const account = accountFor(integrations.data, platform);
           const status = account?.status ?? "DISCONNECTED";
-          const live = platform === "YOUTUBE" || platform === "TIKTOK";
+          const live = platform === "YOUTUBE" || platform === "TIKTOK" || platform === "FACEBOOK" || platform === "INSTAGRAM";
           return (
             <Card key={platform}>
               <div className="flex items-start justify-between gap-3">

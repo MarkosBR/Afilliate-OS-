@@ -10,7 +10,9 @@ export function requestLogger(req: Request, res: Response, next: NextFunction) {
       path.includes("/integrations/youtube/callback") ||
       path.includes("/integrations/youtube/connect") ||
       path.includes("/integrations/tiktok/callback") ||
-      path.includes("/integrations/tiktok/connect")
+      path.includes("/integrations/tiktok/connect") ||
+      path.includes("/integrations/meta/callback") ||
+      path.includes("/integrations/meta/connect")
         ? path
         : req.originalUrl;
     console.log(`${req.method} ${safeUrl} ${res.statusCode} ${duration}ms`);

@@ -73,7 +73,21 @@ export function CalendarPage() {
   const integrations = useQuery({ queryKey: ["integrations"], queryFn: api.integrations.list });
   const youtubeAccounts = integrations.data?.filter((item) => item.platform === "YOUTUBE" && item.status === "CONNECTED") ?? [];
   const tiktokAccounts = integrations.data?.filter((item) => item.platform === "TIKTOK" && item.status === "CONNECTED") ?? [];
-  const liveAccounts = schedulePlatform === "TIKTOK" ? tiktokAccounts : youtubeAccounts;
+  const facebookAccounts = integrations.data?.filter((item) => item.platform === "FACEBOOK" && item.status === "CONNECTED") ?? [];
+  const instagramAccounts = integrations.data?.filter((item) => item.platform === "INSTAGRAM" && item.status === "CONNECTED") ?? [];
+  const liveAccounts =
+    schedulePlatform === "TIKTOK"
+      ? tiktokAccounts
+      : schedulePlatform === "FACEBOOK"
+        ? facebookAccounts
+        : schedulePlatform === "INSTAGRAM"
+          ? instagramAccounts
+          : youtubeAccounts;
+  const liveSchedule =
+    schedulePlatform === "YOUTUBE" ||
+    schedulePlatform === "TIKTOK" ||
+    schedulePlatform === "FACEBOOK" ||
+    schedulePlatform === "INSTAGRAM";
 
   const approve = useMutation({
     mutationFn: (id: string) => api.content.approve(id),
@@ -90,8 +104,7 @@ export function CalendarPage() {
       return api.content.schedule(selected.id, {
         platform: schedulePlatform,
         scheduledAt: new Date(scheduleAt).toISOString(),
-        connectedAccountId:
-          schedulePlatform === "YOUTUBE" || schedulePlatform === "TIKTOK" ? connectedAccountId || null : null,
+        connectedAccountId: liveSchedule ? connectedAccountId || null : null,
       });
     },
     onSuccess: async () => {
@@ -119,8 +132,8 @@ export function CalendarPage() {
       toast.push(
         item.status === "PUBLISHED"
           ? "Publicacao confirmada."
-          : item.status === "PENDING"
-            ? "TikTok ainda esta processando o video."
+            : item.status === "PENDING"
+            ? "A plataforma ainda esta processando o video."
             : `Status: ${item.status}`,
       );
     },
@@ -133,7 +146,7 @@ export function CalendarPage() {
     setSelected(item);
     setScheduleAt(defaultScheduleAt());
     setSchedulePlatform("INSTAGRAM");
-    setConnectedAccountId(youtubeAccounts[0]?.id ?? "");
+    setConnectedAccountId(instagramAccounts[0]?.id ?? "");
     setOpen(true);
   }
 
@@ -153,7 +166,7 @@ export function CalendarPage() {
         <div>
           <h2 className="text-xl font-semibold">Calendario</h2>
           <p className="text-sm text-[var(--color-text-muted)]">
-            Aprovar, agendar e publicar no YouTube ou TikTok. Instagram e Facebook continuam sem envio externo.
+            Aprovar, agendar e publicar no YouTube, TikTok, Facebook ou Instagram. WhatsApp e Telegram continuam sem envio externo.
           </p>
         </div>
         <Button onClick={() => schedulable[0] && openSchedule(schedulable[0])} disabled={!schedulable.length}>
@@ -213,11 +226,14 @@ export function CalendarPage() {
                 <TD className="text-right">
                   {item.status === "SCHEDULED" || item.status === "PENDING" || item.status === "READY" ? (
                     <>
-                      {item.platform === "YOUTUBE" || item.platform === "TIKTOK" ? (
+                      {item.platform === "YOUTUBE" ||
+                      item.platform === "TIKTOK" ||
+                      item.platform === "FACEBOOK" ||
+                      item.platform === "INSTAGRAM" ? (
                         <Button variant="ghost" size="sm" onClick={() => publishNow.mutate(item.id)} disabled={publishNow.isPending}>
-                          {item.status === "PENDING" && item.platform === "TIKTOK"
-                            ? "Consultar TikTok"
-                            : `Publicar ${item.platform === "TIKTOK" ? "TikTok" : "YouTube"}`}
+                          {item.status === "PENDING"
+                            ? `Consultar ${item.platform === "INSTAGRAM" ? "Instagram" : item.platform === "TIKTOK" ? "TikTok" : item.platform}`
+                            : `Publicar ${item.platform === "TIKTOK" ? "TikTok" : item.platform === "INSTAGRAM" ? "Instagram" : item.platform === "FACEBOOK" ? "Facebook" : "YouTube"}`}
                         </Button>
                       ) : null}
                       {item.status !== "PENDING" ? (
@@ -262,9 +278,13 @@ export function CalendarPage() {
               setConnectedAccountId(
                 next === "TIKTOK"
                   ? (tiktokAccounts[0]?.id ?? "")
-                  : next === "YOUTUBE"
-                    ? (youtubeAccounts[0]?.id ?? "")
-                    : "",
+                  : next === "FACEBOOK"
+                    ? (facebookAccounts[0]?.id ?? "")
+                    : next === "INSTAGRAM"
+                      ? (instagramAccounts[0]?.id ?? "")
+                      : next === "YOUTUBE"
+                        ? (youtubeAccounts[0]?.id ?? "")
+                        : "",
               );
             }}
           >
@@ -274,9 +294,17 @@ export function CalendarPage() {
               </option>
             ))}
           </Select>
-          {schedulePlatform === "YOUTUBE" || schedulePlatform === "TIKTOK" ? (
+          {liveSchedule ? (
             <Select
-              label={schedulePlatform === "TIKTOK" ? "Conta TikTok" : "Conta YouTube"}
+              label={
+                schedulePlatform === "TIKTOK"
+                  ? "Conta TikTok"
+                  : schedulePlatform === "FACEBOOK"
+                    ? "Pagina Facebook"
+                    : schedulePlatform === "INSTAGRAM"
+                      ? "Conta Instagram"
+                      : "Conta YouTube"
+              }
               value={connectedAccountId}
               onChange={(e) => setConnectedAccountId(e.target.value)}
             >
@@ -288,7 +316,11 @@ export function CalendarPage() {
               ))}
             </Select>
           ) : null}
-          {(schedulePlatform === "YOUTUBE" || schedulePlatform === "TIKTOK") && selected && !selected.hasVideo ? (
+          {(schedulePlatform === "YOUTUBE" ||
+            schedulePlatform === "TIKTOK" ||
+            schedulePlatform === "INSTAGRAM") &&
+          selected &&
+          !selected.hasVideo ? (
             <p className="text-sm text-[var(--color-danger)]">Este conteudo precisa de um arquivo de video.</p>
           ) : null}
           <Input

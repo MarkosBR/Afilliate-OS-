@@ -2,7 +2,7 @@
 
 AffiliateOS — Seu sistema operacional para afiliados.
 
-Fase 9: OAuth TikTok real e Content Posting API, sobre as Fases 0-8 (incluindo YouTube). Instagram, Facebook, WhatsApp e Telegram continuam como stub.
+Fase 10: OAuth Meta real (Facebook + Instagram) sobre as Fases 0-9. WhatsApp e Telegram continuam como stub.
 
 ## Stack
 
@@ -113,17 +113,18 @@ docs/       arquitetura e roadmap
 scripts/    utilitarios locais
 ```
 
-## Funcionalidades da Fase 9
+## Funcionalidades da Fase 10
 
-- OAuth 2.0 TikTok (`user.info.basic` + `video.publish`)
-- `GET /api/integrations/tiktok/connect` e `GET /api/integrations/tiktok/callback`
-- Content Posting API: `FILE_UPLOAD` + PUT em `upload_url` + `status/fetch`
-- `PUBLISHED` so quando TikTok confirma `PUBLISH_COMPLETE`; senao `PENDING` (`TIKTOK_PROCESSING`)
+- OAuth 2.0 Meta para Facebook Page e Instagram profissional
+- `GET /api/integrations/meta/connect` e `GET /api/integrations/meta/callback`
+- Facebook: `/{page-id}/feed` (texto) e `/{page-id}/videos` (arquivo local)
+- Instagram: container resumable Reels + `media_publish` (conta profissional vinculada a Page)
+- `PUBLISHED` so apos confirmacao da Graph API; processamento vira `PENDING`
 - Tokens cifrados no backend; nunca na API, logs ou frontend
-- App sobe sem `TIKTOK_*` / `GOOGLE_*`; sem credenciais responde `OAUTH_NOT_CONFIGURED`
-- Instagram, Facebook, WhatsApp e Telegram continuam `Em breve`
+- App sobe sem `META_*` / `TIKTOK_*` / `GOOGLE_*`; sem credenciais responde `OAUTH_NOT_CONFIGURED`
+- WhatsApp e Telegram continuam `Em breve`
 
-As Fases 0-8 permanecem, inclusive OAuth e upload reais do YouTube.
+As Fases 0-9 permanecem, inclusive YouTube e TikTok reais.
 
 ## YouTube (Google Cloud)
 
@@ -146,6 +147,18 @@ Limitacoes: sem cron automatico; publish e manual; videos ficam privados; sem li
 7. Caption usa titulo + corpo (max 2200). Publish manual; consultar de novo enquanto `PENDING`.
 
 Limitacoes reais: app TikTok precisa de aprovacao Content Posting / Direct Post; sem cron; testes mockam HTTP e nao chamam a API live.
+
+## Meta (Facebook + Instagram)
+
+1. Crie um app em https://developers.facebook.com/.
+2. Adicione Facebook Login e as permissoes: `pages_show_list`, `pages_read_engagement`, `pages_manage_posts`, `instagram_basic`, `instagram_content_publish`.
+3. Redirect URI: `http://localhost:3001/api/integrations/meta/callback`
+4. Preencha `META_APP_ID`, `META_APP_SECRET` e `META_REDIRECT_URI` no `.env`.
+5. Em `/integrations`, Conectar Facebook ou Instagram inicia o mesmo OAuth Meta.
+6. Facebook usa a primeira Page com `pages_manage_posts`. Instagram exige conta profissional/Business vinculada a essa Page.
+7. Facebook texto nao precisa de video; Instagram Reels exige arquivo local. Publish e manual; consultar de novo enquanto `PENDING`.
+
+Limitacoes reais: app Meta em modo Development so publica para usuarios de teste; permissoes avancadas exigem App Review. Conta Instagram pessoal nao e suportada. Sem cron; testes mockam HTTP e nao chamam a Graph API live.
 
 ## Proximas fases
 

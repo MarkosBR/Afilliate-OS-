@@ -6,6 +6,8 @@ import {
   getIntegrationController,
   integrationStatusController,
   listIntegrationsController,
+  metaCallbackController,
+  metaConnectController,
   tiktokCallbackController,
   tiktokConnectController,
   youtubeCallbackController,
@@ -18,6 +20,8 @@ integrationsRouter.get("/youtube/callback", youtubeCallbackController);
 integrationsRouter.get("/youtube/connect", requireAuth, youtubeConnectController);
 integrationsRouter.get("/tiktok/callback", tiktokCallbackController);
 integrationsRouter.get("/tiktok/connect", requireAuth, tiktokConnectController);
+integrationsRouter.get("/meta/callback", metaCallbackController);
+integrationsRouter.get("/meta/connect", requireAuth, metaConnectController);
 integrationsRouter.use(requireAuth);
 integrationsRouter.get("/", listIntegrationsController);
 integrationsRouter.post("/:platform/connect", connectPlatformController);

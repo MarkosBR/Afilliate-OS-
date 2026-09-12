@@ -7,6 +7,8 @@ import { getOAuthProvider } from "./oauth.provider.js";
 import { getPlatformAdapter } from "../publications/platform.adapter.js";
 import { startYouTubeConnect } from "./youtube.service.js";
 import { startTikTokConnect } from "./tiktok.service.js";
+import { startMetaConnect } from "./meta.service.js";
+import { isMetaOAuthConfigured } from "./meta.oauth.js";
 
 export async function listIntegrations(userId: string) {
   const items = await prisma.connectedAccount.findMany({
@@ -39,6 +41,9 @@ export async function connectPlatform(userId: string, platform: IntegrationPlatf
   }
   if (platform === "TIKTOK") {
     return startTikTokConnect(userId);
+  }
+  if ((platform === "FACEBOOK" || platform === "INSTAGRAM") && isMetaOAuthConfigured()) {
+    return startMetaConnect(userId);
   }
   getPlatformAdapter(platform);
   const provider = getOAuthProvider(platform);

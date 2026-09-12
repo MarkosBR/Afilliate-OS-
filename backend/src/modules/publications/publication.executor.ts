@@ -2,6 +2,7 @@ import type { ConnectedAccount, Content, Publication } from "@prisma/client";
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../middleware/errorHandler.js";
 import { createNotification } from "../notifications/notifications.service.js";
+import { InstagramPlatformAdapter } from "../integrations/instagram.adapter.js";
 import { TikTokPlatformAdapter } from "../integrations/tiktok.adapter.js";
 import { getPlatformAdapter } from "./platform.adapter.js";
 
@@ -52,29 +53,53 @@ async function markPublished(publication: Publication & { content: Content }, ex
   return { id: updated.id, status: "PUBLISHED" as const, externalId };
 }
 
-async function refreshTikTokPublication(
+function processingCode(platform: Publication["platform"]) {
+  if (platform === "TIKTOK") return "TIKTOK_PROCESSING";
+  if (platform === "INSTAGRAM") return "INSTAGRAM_PROCESSING";
+  return "PROCESSING";
+}
+
+async function markProcessing(publicationId: string, externalId: string, platform: Publication["platform"]) {
+  const updated = await prisma.publication.update({
+    where: { id: publicationId },
+    data: {
+      status: "PENDING",
+      externalId,
+      errorMessage: processingCode(platform),
+    },
+  });
+  return { id: updated.id, status: "PENDING" as const, externalId };
+}
+
+async function refreshAsyncPublication(
   publication: Publication & { content: Content; connectedAccount: ConnectedAccount },
 ) {
   if (!publication.externalId) {
     throw new AppError(400, "PUBLICATION_NOT_READY", "Publication is not ready to publish.");
   }
-  const adapter = getPlatformAdapter("TIKTOK");
-  if (!(adapter instanceof TikTokPlatformAdapter)) {
-    throw new AppError(501, "PLATFORM_NOT_IMPLEMENTED", "This platform is not implemented yet.");
+  if (publication.platform === "TIKTOK") {
+    const adapter = getPlatformAdapter("TIKTOK");
+    if (!(adapter instanceof TikTokPlatformAdapter)) {
+      throw new AppError(501, "PLATFORM_NOT_IMPLEMENTED", "This platform is not implemented yet.");
+    }
+    const status = await adapter.fetchPublishStatus(publication.connectedAccount, publication.externalId);
+    if (status.status === "PROCESSING") {
+      return markProcessing(publication.id, status.externalId, "TIKTOK");
+    }
+    return markPublished(publication, status.externalId);
   }
-  const status = await adapter.fetchPublishStatus(publication.connectedAccount, publication.externalId);
-  if (status.status === "PROCESSING") {
-    const updated = await prisma.publication.update({
-      where: { id: publication.id },
-      data: {
-        status: "PENDING",
-        externalId: status.externalId,
-        errorMessage: "TIKTOK_PROCESSING",
-      },
-    });
-    return { id: updated.id, status: "PENDING" as const, externalId: status.externalId };
+  if (publication.platform === "INSTAGRAM") {
+    const adapter = getPlatformAdapter("INSTAGRAM");
+    if (!(adapter instanceof InstagramPlatformAdapter)) {
+      throw new AppError(501, "PLATFORM_NOT_IMPLEMENTED", "This platform is not implemented yet.");
+    }
+    const status = await adapter.fetchPublishStatus(publication.connectedAccount, publication.externalId);
+    if (status.status === "PROCESSING") {
+      return markProcessing(publication.id, status.externalId, "INSTAGRAM");
+    }
+    return markPublished(publication, status.externalId);
   }
-  return markPublished(publication, status.externalId);
+  throw new AppError(400, "PUBLICATION_NOT_READY", "Publication is not ready to publish.");
 }
 
 export async function executePublication(publicationId: string, actorUserId?: string) {
@@ -101,12 +126,12 @@ export async function executePublication(publicationId: string, actorUserId?: st
 
   if (
     publication.status === "PENDING" &&
-    publication.platform === "TIKTOK" &&
+    (publication.platform === "TIKTOK" || publication.platform === "INSTAGRAM") &&
     publication.externalId &&
     publication.connectedAccount
   ) {
     try {
-      return await refreshTikTokPublication({
+      return await refreshAsyncPublication({
         ...publication,
         connectedAccount: publication.connectedAccount,
       });
@@ -136,15 +161,7 @@ export async function executePublication(publicationId: string, actorUserId?: st
       scheduledAt: publication.scheduledAt,
     });
     if (result.status === "PROCESSING") {
-      const updated = await prisma.publication.update({
-        where: { id: publication.id },
-        data: {
-          status: "PENDING",
-          externalId: result.externalId,
-          errorMessage: "TIKTOK_PROCESSING",
-        },
-      });
-      return { id: updated.id, status: "PENDING" as const, externalId: result.externalId };
+      return markProcessing(publication.id, result.externalId, publication.platform);
     }
     return markPublished(publication, result.externalId);
   } catch (error) {

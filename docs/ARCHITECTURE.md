@@ -1,12 +1,12 @@
 # Architecture
 
-AffiliateOS e um SaaS para afiliados. A Fase 9 entrega OAuth TikTok real e Content Posting API sobre as Fases 0-8.
+AffiliateOS e um SaaS para afiliados. A Fase 10 entrega OAuth Meta real (Facebook + Instagram) sobre as Fases 0-9.
 
 ## Principio
 
 Foundation primeiro. Funcionalidade depois.
 
-YouTube e TikTok tem OAuth e envio reais. Instagram, Facebook, WhatsApp e Telegram permanecem stub. Tokens nunca saem do backend.
+YouTube, TikTok, Facebook e Instagram tem OAuth e envio reais. WhatsApp e Telegram permanecem stub. Tokens nunca saem do backend.
 
 ## Visao geral
 
@@ -62,6 +62,8 @@ Implementado:
 - `GET /api/integrations/youtube/callback`
 - `GET /api/integrations/tiktok/connect`
 - `GET /api/integrations/tiktok/callback`
+- `GET /api/integrations/meta/connect`
+- `GET /api/integrations/meta/callback`
 - `POST /api/content/:id/video`
 - `POST /api/publications/:id/publish`
 - `GET /go/:slug`
@@ -71,20 +73,21 @@ Ainda placeholder (`501`):
 - `/api/leads`
 - `/api/sales`
 
-## Integracoes (Fase 9)
+## Integracoes (Fase 10)
 
 - Modelo `ConnectedAccount` (um por `userId+platform`) e `OAuthState` one-time HMAC
 - Tokens cifrados em AES-256-GCM (`TOKEN_ENCRYPTION_KEY`, fallback `AUTH_SECRET`)
 - Serializer nunca inclui `accessToken` / `refreshToken`
 - YouTube: `YouTubeOAuthProvider` + `YouTubePlatformAdapter` (OAuth 2.0 + upload resumable)
 - TikTok: `TikTokOAuthProvider` + `TikTokPlatformAdapter` (OAuth 2.0 + Content Posting FILE_UPLOAD)
-- App sobe sem `GOOGLE_*` / `TIKTOK_*`; connect sem config responde `OAUTH_NOT_CONFIGURED`
-- Instagram, Facebook, WhatsApp e Telegram: stubs `OAUTH_NOT_CONFIGURED` / `PLATFORM_NOT_IMPLEMENTED`
-- Publish YouTube/TikTok exige conteudo APPROVED/SCHEDULED, conta CONNECTED do mesmo usuario e arquivo local
-- YouTube sucesso: `PUBLISHED` + `externalId`; TikTok so marca `PUBLISHED` apos `PUBLISH_COMPLETE`
-- TikTok em processamento: `PENDING` + `errorMessage=TIKTOK_PROCESSING`; republicar consulta `status/fetch`
+- Meta: `MetaOAuthProvider` + `FacebookPlatformAdapter` + `InstagramPlatformAdapter` (Graph API v21.0)
+- App sobe sem `GOOGLE_*` / `TIKTOK_*` / `META_*`; connect sem config responde `OAUTH_NOT_CONFIGURED`
+- WhatsApp e Telegram: stubs `OAUTH_NOT_CONFIGURED` / `PLATFORM_NOT_IMPLEMENTED`
+- Publish exige conteudo APPROVED/SCHEDULED, conta CONNECTED do mesmo usuario e mídia valida
+- Facebook: `/{page-id}/feed` (texto) ou `/{page-id}/videos` (arquivo local)
+- Instagram: container resumable Reels + `media_publish`; so conta profissional vinculada a Page
+- Instagram em processamento: `PENDING` + `errorMessage=INSTAGRAM_PROCESSING`; republicar consulta status
 - Falha: `FAILED` + notificacao; videos em `uploads/videos/{userId}/` (gitignored)
-- Privacidade YouTube `private`; TikTok prefere `SELF_ONLY`
 
 ### Como adicionar uma plataforma
 

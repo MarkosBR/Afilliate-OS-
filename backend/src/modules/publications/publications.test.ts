@@ -88,7 +88,7 @@ describe("phase 6 scheduling", { concurrency: false }, () => {
     const tooSoon = await agent.request(
       "POST",
       `/api/content/${draft.id}/schedule`,
-      { platform: "INSTAGRAM", scheduledAt: futureIso(2) },
+      { platform: "OTHER", scheduledAt: futureIso(2) },
       alpha.token,
     );
     assert.equal(tooSoon.status, 400);
@@ -101,7 +101,7 @@ describe("phase 6 scheduling", { concurrency: false }, () => {
     const past = await agent.request(
       "POST",
       `/api/content/${draft.id}/schedule`,
-      { platform: "INSTAGRAM", scheduledAt: new Date(Date.now() - 60_000).toISOString() },
+      { platform: "OTHER", scheduledAt: new Date(Date.now() - 60_000).toISOString() },
       alpha.token,
     );
     assert.equal(past.status, 400);
@@ -119,7 +119,7 @@ describe("phase 6 scheduling", { concurrency: false }, () => {
     const created = await agent.request(
       "POST",
       `/api/content/${draft.id}/schedule`,
-      { platform: "INSTAGRAM", scheduledAt },
+      { platform: "OTHER", scheduledAt },
       alpha.token,
     );
     assert.equal(created.status, 201);
@@ -131,14 +131,14 @@ describe("phase 6 scheduling", { concurrency: false }, () => {
       userId: string;
     };
     assert.equal(publication.status, "SCHEDULED");
-    assert.equal(publication.platform, "INSTAGRAM");
+    assert.equal(publication.platform, "OTHER");
     assert.equal(publication.contentId, draft.id);
     assert.equal(publication.userId, alpha.user.id);
 
     const duplicate = await agent.request(
       "POST",
       `/api/content/${draft.id}/schedule`,
-      { platform: "INSTAGRAM", scheduledAt: futureIso(72) },
+      { platform: "OTHER", scheduledAt: futureIso(72) },
       alpha.token,
     );
     assert.equal(duplicate.status, 409);
@@ -148,7 +148,7 @@ describe("phase 6 scheduling", { concurrency: false }, () => {
 
     const calendar = await agent.request(
       "GET",
-      `/api/calendar?from=${encodeURIComponent(new Date().toISOString())}&to=${encodeURIComponent(futureIso(96))}&status=SCHEDULED&platform=INSTAGRAM`,
+      `/api/calendar?from=${encodeURIComponent(new Date().toISOString())}&to=${encodeURIComponent(futureIso(96))}&status=SCHEDULED&platform=OTHER`,
       undefined,
       alpha.token,
     );

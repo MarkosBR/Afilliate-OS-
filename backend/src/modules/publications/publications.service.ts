@@ -90,20 +90,37 @@ export async function scheduleContent(
 
   const scheduledAt = parseScheduledAt(input.scheduledAt);
   let connectedAccountId: string | null = null;
-  if (input.platform === "YOUTUBE" || input.platform === "TIKTOK") {
-    const missingCode = input.platform === "YOUTUBE" ? "YOUTUBE_NOT_CONNECTED" : "TIKTOK_NOT_CONNECTED";
+  const livePlatforms = ["YOUTUBE", "TIKTOK", "FACEBOOK", "INSTAGRAM"] as const;
+  const missingCodes: Record<(typeof livePlatforms)[number], string> = {
+    YOUTUBE: "YOUTUBE_NOT_CONNECTED",
+    TIKTOK: "TIKTOK_NOT_CONNECTED",
+    FACEBOOK: "META_NOT_CONNECTED",
+    INSTAGRAM: "META_NOT_CONNECTED",
+  };
+  const isLive = livePlatforms.includes(input.platform as (typeof livePlatforms)[number]);
+  if (isLive) {
+    const missingCode = missingCodes[input.platform as (typeof livePlatforms)[number]];
     if (!input.connectedAccountId) {
       throw new AppError(400, missingCode, `A connected ${input.platform} account is required.`);
     }
-    if (!content.videoPath) {
-      throw new AppError(400, "VIDEO_REQUIRED", `A video file is required to schedule ${input.platform} publications.`);
+    if ((input.platform === "YOUTUBE" || input.platform === "TIKTOK" || input.platform === "INSTAGRAM") && !content.videoPath) {
+      const code = input.platform === "INSTAGRAM" ? "MEDIA_NOT_SUPPORTED" : "VIDEO_REQUIRED";
+      throw new AppError(400, code, `A video file is required to schedule ${input.platform} publications.`);
     }
   }
   if (input.connectedAccountId) {
     const account = await assertOwnedConnectedAccount(userId, input.connectedAccountId, input.platform);
-    if ((input.platform === "YOUTUBE" || input.platform === "TIKTOK") && account.status !== "CONNECTED") {
-      const missingCode = input.platform === "YOUTUBE" ? "YOUTUBE_NOT_CONNECTED" : "TIKTOK_NOT_CONNECTED";
+    if (isLive && account.status !== "CONNECTED") {
+      const missingCode = missingCodes[input.platform as (typeof livePlatforms)[number]];
       throw new AppError(400, missingCode, `${input.platform} is not connected.`);
+    }
+    if (input.platform === "INSTAGRAM") {
+      const meta = account.metadata && typeof account.metadata === "object" && !Array.isArray(account.metadata)
+        ? (account.metadata as { igUserId?: string | null })
+        : {};
+      if (!account.externalAccountId && !meta.igUserId) {
+        throw new AppError(400, "INSTAGRAM_ACCOUNT_NOT_SUPPORTED", "Instagram professional account is required.");
+      }
     }
     connectedAccountId = account.id;
   }

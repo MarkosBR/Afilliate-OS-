@@ -207,6 +207,7 @@ export const api = {
       request<ConnectedAccount | { authorizationUrl: string }>(`/api/integrations/${platform}/connect`, { method: "POST" }),
     youtubeConnectUrl: "/api/integrations/youtube/connect?json=1",
     tiktokConnectUrl: "/api/integrations/tiktok/connect?json=1",
+    metaConnectUrl: "/api/integrations/meta/connect?json=1",
     disconnect: (id: string) => request<ConnectedAccount>(`/api/integrations/${id}/disconnect`, { method: "POST" }),
   },
   ai: {

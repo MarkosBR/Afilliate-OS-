@@ -87,16 +87,25 @@ Status: concluida.
 
 ## Fase 09 — TikTok real
 
-Status: concluida nesta entrega.
+Status: concluida.
 
 - OAuth 2.0 TikTok (`user.info.basic`, `video.publish`)
 - Content Posting API com `FILE_UPLOAD` + `status/fetch`
 - `PUBLISHED` so apos `PUBLISH_COMPLETE`; processamento vira `PENDING`
 - Publish manual; sem cron; exige video local e conta CONNECTED
-- Instagram, Facebook, WhatsApp e Telegram continuam stub
+
+## Fase 10 — Meta real (Facebook + Instagram)
+
+Status: concluida nesta entrega.
+
+- OAuth 2.0 Meta (`pages_manage_posts`, `instagram_content_publish` e correlatos)
+- Facebook Page: feed de texto e upload de video
+- Instagram profissional vinculado a Page: Reels via container + `media_publish`
+- `PUBLISHED` so apos confirmacao da Graph API; processamento vira `PENDING`
+- WhatsApp e Telegram continuam stub
 
 ## Proximas fases (planejado)
 
-### Fase 10 — Demais redes
+### Fase 11 — Demais redes
 
-OAuth e publicacao real em Instagram, Facebook e correlatas.
+OAuth e publicacao real em WhatsApp, Telegram e correlatas.

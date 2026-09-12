@@ -176,9 +176,9 @@ describe("phase 7 integrations", { concurrency: false }, () => {
     const betaAccount = await prisma.connectedAccount.create({
       data: {
         userId: beta.user.id,
-        platform: "INSTAGRAM",
+        platform: "FACEBOOK",
         status: "CONNECTED",
-        accessToken: encryptSecret("beta-ig"),
+        accessToken: encryptSecret("beta-fb"),
       },
     });
 
@@ -197,7 +197,7 @@ describe("phase 7 integrations", { concurrency: false }, () => {
       "POST",
       `/api/content/${content.id}/schedule`,
       {
-        platform: "INSTAGRAM",
+        platform: "FACEBOOK",
         scheduledAt: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
         connectedAccountId: betaAccount.id,
       },
@@ -209,15 +209,17 @@ describe("phase 7 integrations", { concurrency: false }, () => {
 
   it("keeps adapter registry unimplemented and executor without real send", async () => {
     assert.throws(() => getPlatformAdapter("OTHER"), /Invalid integration platform/);
-    const adapter = getPlatformAdapter("INSTAGRAM");
+    const adapter = getPlatformAdapter("WHATSAPP");
     await assert.rejects(() => adapter.publish({
       publicationId: "x",
       contentId: "y",
-      platform: "INSTAGRAM",
+      platform: "WHATSAPP" as never,
       scheduledAt: new Date(),
     }));
     assert.equal(getPlatformAdapter("YOUTUBE").platform, "YOUTUBE");
     assert.equal(getPlatformAdapter("TIKTOK").platform, "TIKTOK");
+    assert.equal(getPlatformAdapter("FACEBOOK").platform, "FACEBOOK");
+    assert.equal(getPlatformAdapter("INSTAGRAM").platform, "INSTAGRAM");
 
     const serialized = serializeConnectedAccount({
       id: "acc",
@@ -252,7 +254,7 @@ describe("phase 7 integrations", { concurrency: false }, () => {
       data: {
         userId: alpha.user.id,
         contentId: content.id,
-        platform: "INSTAGRAM",
+        platform: "OTHER",
         scheduledAt: new Date(Date.now() - 60_000),
         status: "SCHEDULED",
       },
